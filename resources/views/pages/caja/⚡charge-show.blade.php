@@ -2,6 +2,7 @@
 
 use App\Models\Caja\ChargeDocument;
 use App\Models\Caja\VoidReason;
+use App\Models\ReceiptPrint;
 use App\Models\VoidRequest;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -34,6 +35,12 @@ new #[Title('Detalle de cobro')] class extends Component {
     public function voidReasons()
     {
         return VoidReason::query()->selectable()->get();
+    }
+
+    #[Computed]
+    public function timesPrinted(): int
+    {
+        return ReceiptPrint::query()->forDocument($this->documentId)->count();
     }
 
     /** Solicitud de anulacion mas reciente para este comprobante, si existe. */
@@ -101,14 +108,26 @@ new #[Title('Detalle de cobro')] class extends Component {
 }; ?>
 
 <section class="w-full max-w-3xl mx-auto space-y-6">
-    {{-- Llega con ?print=1 desde el cobro recien emitido: abre la impresion sola. --}}
-    @if (request()->boolean('print'))
-        <script>
-            // Se espera a que carguen fuentes y estilos; si no, el navegador puede
-            // imprimir la boleta a medio maquetar.
-            window.addEventListener('load', () => setTimeout(() => window.print(), 400));
-        </script>
-    @endif
+    {{--
+        Impresion del ticket. Se hace en un iframe oculto que carga la ruta del
+        ticket (formato ticketera): asi se imprime solo el comprobante y no esta
+        pagina con el menu del aplicativo. Llega con ?print=1 al emitir el cobro; el
+        boton "Imprimir boleta" hace lo mismo bajo demanda.
+    --}}
+    <iframe
+        x-data="{
+            imprimir() {
+                const marco = $refs.marco;
+                marco.src = @js(route('caja.charges.ticket', $documentId)) + '?t=' + Date.now();
+            }
+        }"
+        x-init="@if (request()->boolean('print')) imprimir() @endif"
+        x-ref="marco"
+        @imprimir-ticket.window="imprimir()"
+        title="Ticket"
+        aria-hidden="true"
+        style="position:absolute; width:0; height:0; border:0; visibility:hidden;"
+    ></iframe>
 
     <div class="flex items-start justify-between gap-4">
         <div class="min-w-0">
@@ -228,7 +247,19 @@ new #[Title('Detalle de cobro')] class extends Component {
         </div>
 
         <div class="flex flex-wrap gap-2 print:hidden">
-            <flux:button variant="ghost" onclick="window.print()" icon="printer">Imprimir boleta</flux:button>
+            <flux:button
+                variant="ghost"
+                icon="printer"
+                x-on:click="$dispatch('imprimir-ticket')"
+            >
+                {{ $this->timesPrinted > 0 ? 'Reimprimir boleta' : 'Imprimir boleta' }}
+            </flux:button>
+
+            @if ($this->timesPrinted > 0)
+                <flux:text class="self-center text-xs text-zinc-500">
+                    Impresa {{ $this->timesPrinted }} {{ Str::plural('vez', $this->timesPrinted, 'veces') }}; las copias salen marcadas como reimpresión.
+                </flux:text>
+            @endif
 
             @if (! $this->document->isVoided() && ! $this->voidRequest?->isPending() && $this->canRequestVoid && ! $showVoidForm)
                 <flux:button variant="danger" wire:click="$set('showVoidForm', true)" icon="x-circle">Solicitar anulación</flux:button>

@@ -70,9 +70,9 @@ select:focus[data-flux-control] {
 } */
 
 /*
- * Impresion de boleta: al imprimir solo debe salir el comprobante, no el menu
- * lateral, la cabecera movil ni los avisos. Sin esto la boleta sale con toda la
- * navegacion del aplicativo alrededor.
+ * La boleta se imprime desde un iframe oculto con la vista `caja.ticket` (formato
+ * ticketera), no desde esta pagina. Estas reglas son el respaldo por si alguien usa
+ * Ctrl+P sobre la pantalla: al menos no imprime el menu ni sale en oscuro.
  */
 @media print {
 
