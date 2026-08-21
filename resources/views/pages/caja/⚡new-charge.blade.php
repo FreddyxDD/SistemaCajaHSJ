@@ -10,6 +10,7 @@ use App\Models\Caja\LegacyHistoriaClinica;
 use App\Models\Caja\PaymentMethod;
 use App\Models\Caja\Price;
 use App\Models\Sigh\Atencion;
+use App\Support\Caja\CatalogChanges;
 use App\Models\Sigh\Patient;
 use App\Support\Caja\HistoriaClinicaProvisioner;
 use App\Support\Caja\LegacyIdGenerator;
@@ -193,6 +194,23 @@ new #[Title('Nuevo cobro')] class extends Component {
             ->get();
     }
 
+    /**
+     * Cambios recientes del catalogo, indexados por servicio, para avisar al cajero
+     * antes de que se encuentre con un precio distinto al de la manana. Solo se
+     * consideran los cambios de precio de la forma de pago elegida.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    #[Computed]
+    public function recentCatalogChanges(): array
+    {
+        return CatalogChanges::recent(
+            $this->paymentMethodCode
+                ? PaymentMethod::query()->find($this->paymentMethodCode)?->nom_forma_pago
+                : null,
+        );
+    }
+
     #[Computed]
     public function itemResults()
     {
@@ -265,7 +283,7 @@ new #[Title('Nuevo cobro')] class extends Component {
             ->join('Nomenclatura_caja_MH as nc', 'nc.cod_nomen_caja', '=', 'Precio_MH.cod_nomen_caja')
             ->where('nc.grupo', $meta['grupo'])
             ->when($meta['like'] ?? null, fn ($q, $like) => $q->where('nc.descripcion_nomen_tipo', 'like', $like))
-            ->select('Precio_MH.cod_precio', 'Precio_MH.precio', 'nc.nomen_caja', 'nc.descripcion_nomen_tipo')
+            ->select('Precio_MH.cod_precio', 'Precio_MH.precio', 'Precio_MH.cod_nomen_caja', 'nc.nomen_caja', 'nc.descripcion_nomen_tipo')
             ->get()
             ->keyBy(fn ($row) => trim((string) $row->nomen_caja));
 
@@ -293,6 +311,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                         'codigo' => $code,
                         'descripcion' => $desc,
                         'cod_precio' => $item->cod_precio ?? null,
+                        'cod_nomen_caja' => $item->cod_nomen_caja ?? null,
                         'precio' => $item?->precio,
                         'placas' => $paper['placas'],
                         'medidas' => $paper['medidas'],
@@ -323,6 +342,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                 'codigo' => $code,
                 'descripcion' => $item->descripcion_nomen_tipo,
                 'cod_precio' => $item->cod_precio,
+                'cod_nomen_caja' => $item->cod_nomen_caja,
                 'precio' => $item->precio,
                 'placas' => null,
                 'medidas' => null,
@@ -944,6 +964,51 @@ new #[Title('Nuevo cobro')] class extends Component {
                 @if (! $paymentMethodCode)
                     <flux:text class="text-zinc-500">Selecciona primero una forma de pago para ver el catálogo con el precio correcto.</flux:text>
                 @else
+                    {{-- Aviso de lo que costos cambió hace poco, antes de que el cajero
+                         se encuentre con un precio distinto al de la mañana. --}}
+                    @if (! empty($this->recentCatalogChanges))
+                        @php
+                            $cambios = collect($this->recentCatalogChanges);
+                            $porTipo = $cambios->groupBy('tipo');
+                        @endphp
+
+                        <div x-data="{ abierto: false }" class="rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-500/40 dark:bg-amber-400/10">
+                            <button type="button" x-on:click="abierto = ! abierto" class="flex w-full items-center gap-2 px-3 py-2 text-left">
+                                <flux:icon.megaphone class="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                                <flux:text class="flex-1 text-sm text-amber-900 dark:text-amber-200">
+                                    {{ $cambios->count() }}
+                                    {{ Str::plural('servicio', $cambios->count()) }}
+                                    {{ $cambios->count() === 1 ? 'cambió' : 'cambiaron' }}
+                                    en los últimos {{ (int) config('caja.avisos_cambios_dias', 7) }} días
+                                    <span class="opacity-75">
+                                        ({{ collect([
+                                            ($porTipo['precio'] ?? collect())->count() ? ($porTipo['precio'])->count().' de precio' : null,
+                                            ($porTipo['nuevo'] ?? collect())->count() ? ($porTipo['nuevo'])->count().' nuevo(s)' : null,
+                                            ($porTipo['nombre'] ?? collect())->count() ? ($porTipo['nombre'])->count().' renombrado(s)' : null,
+                                        ])->filter()->implode(' · ') }})
+                                    </span>
+                                </flux:text>
+                                <flux:icon.chevron-down class="size-4 shrink-0 text-amber-600 transition-transform dark:text-amber-400" x-bind:class="abierto && 'rotate-180'" />
+                            </button>
+
+                            <div x-show="abierto" x-cloak class="space-y-1 border-t border-amber-300 px-3 py-2 dark:border-amber-500/40">
+                                @foreach ($this->recentCatalogChanges as $codigo => $cambio)
+                                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                                        <x-catalog-change-mark :change="$cambio" />
+                                        <span class="font-medium">{{ $cambio['servicio'] ?? $codigo }}</span>
+                                        <span class="text-zinc-600 dark:text-zinc-400">{{ $cambio['detalle'] }}</span>
+                                        <span class="text-zinc-500">
+                                            · {{ $cambio['fecha']->format('d/m/Y H:i') }}
+                                            @if ($cambio['usuario'])
+                                                · {{ $cambio['usuario'] }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     {{-- Modo: buscador libre vs hoja de solicitud (formato de Admisión) --}}
                     <div class="inline-flex rounded-lg border border-zinc-300 p-0.5 dark:border-zinc-600">
                         <button type="button" wire:click="$set('catalogMode', 'buscar')"
@@ -1026,6 +1091,13 @@ new #[Title('Nuevo cobro')] class extends Component {
                                                     <td class="px-2 py-1.5 font-mono text-xs whitespace-nowrap text-zinc-500">{{ $row['codigo'] }}</td>
                                                     <td class="px-2 py-1.5 break-words whitespace-normal {{ $sel ? 'font-medium text-indigo-700 dark:text-indigo-400' : '' }}">
                                                         {{ $row['descripcion'] }}
+                                                        @php $cambio = $this->recentCatalogChanges[$row['cod_nomen_caja'] ?? ''] ?? null; @endphp
+                                                        @if ($cambio)
+                                                            <span class="ms-1 inline-flex items-center gap-1 align-middle">
+                                                                <x-catalog-change-mark :change="$cambio" />
+                                                                <span class="text-xs text-zinc-500">{{ $cambio['detalle'] }}</span>
+                                                            </span>
+                                                        @endif
                                                     </td>
                                                     @if ($sheet['meta']['shows_plates'] ?? false)
                                                         <td class="px-2 py-1.5 text-center text-xs text-zinc-500">{{ $row['placas'] }}</td>
@@ -1081,13 +1153,27 @@ new #[Title('Nuevo cobro')] class extends Component {
 
                     <div class="max-h-96 divide-y overflow-y-auto rounded-lg border dark:divide-zinc-700 dark:border-zinc-700">
                         @forelse ($this->itemResults as $price)
-                            @php $isSelected = in_array($price->cod_precio, $this->selectedPrices, true); @endphp
+                            @php
+                                $isSelected = in_array($price->cod_precio, $this->selectedPrices, true);
+                                $cambio = $this->recentCatalogChanges[$price->cod_nomen_caja] ?? null;
+                            @endphp
                             <button
                                 type="button"
                                 wire:click="toggleItem('{{ $price->cod_precio }}')"
                                 class="flex w-full items-center justify-between gap-4 px-3 py-2.5 text-left {{ $isSelected ? 'bg-indigo-50 dark:bg-indigo-400/10' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}"
                             >
-                                <span class="text-sm {{ $isSelected ? 'font-medium text-indigo-700 dark:text-indigo-400' : '' }}">{{ $price->billableItem?->descripcion_nomen_tipo }}</span>
+                                <span class="min-w-0 flex-1">
+                                    <span class="text-sm {{ $isSelected ? 'font-medium text-indigo-700 dark:text-indigo-400' : '' }}">
+                                        {{ $price->billableItem?->descripcion_nomen_tipo }}
+                                    </span>
+
+                                    @if ($cambio)
+                                        <span class="mt-1 flex flex-wrap items-center gap-2">
+                                            <x-catalog-change-mark :change="$cambio" />
+                                            <span class="text-xs text-zinc-500">{{ $cambio['detalle'] }}</span>
+                                        </span>
+                                    @endif
+                                </span>
                                 <span class="flex shrink-0 items-center gap-2">
                                     <span class="font-medium whitespace-nowrap">S/ {{ number_format($price->precio, 2) }}</span>
                                     @if ($isSelected)

@@ -36,4 +36,18 @@ return [
 
     'turno_horas_maximas' => env('CAJA_TURNO_HORAS_MAX', 12),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Ventana de avisos de cambios del catalogo
+    |--------------------------------------------------------------------------
+    |
+    | Dias durante los que un servicio nuevo, renombrado o con precio modificado
+    | se muestra marcado en la pantalla de cobro. Costos cambia tarifas sin
+    | avisar y el cajero se entera frente al paciente; esto le da el aviso antes.
+    | En 0 se desactivan los avisos.
+    |
+    */
+
+    'avisos_cambios_dias' => env('CAJA_AVISOS_CAMBIOS_DIAS', 7),
+
 ];
