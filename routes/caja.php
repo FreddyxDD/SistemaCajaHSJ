@@ -9,6 +9,12 @@ Route::middleware(['auth', 'verified'])->prefix('caja')->name('caja.')->group(fu
         ->middleware('permission:caja.view')
         ->name('sessions.index');
 
+    // Consulta del tarifario para personal que no opera caja (asistentas sociales,
+    // servicios). Solo lectura: no abre turno ni emite comprobantes.
+    Route::livewire('consulta-precios', 'pages::caja.price-lookup')
+        ->middleware('permission:caja.prices.view')
+        ->name('prices.lookup');
+
     Route::livewire('cajeros', 'pages::caja.cashiers')
         ->middleware('permission:caja.cashiers.view')
         ->name('cashiers.index');

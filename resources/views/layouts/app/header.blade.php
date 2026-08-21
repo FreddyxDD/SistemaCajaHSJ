@@ -49,6 +49,9 @@
                 $turnoChildren !== []
                     ? ['clock', null, 'caja.sessions.index|caja.charges.*', __('Turno'), null, $turnoChildren]
                     : null,
+                $u?->canDo('caja.prices.view')
+                    ? ['currency-dollar', route('caja.prices.lookup'), 'caja.prices.*', __('Consulta de precios'), null, []]
+                    : null,
                 $u?->canDo('caja.void.request')
                     ? ['x-circle', route('caja.void-requests.index'), 'caja.void-requests.*', __('Anulaciones'), $pendingVoids ?: null, []]
                     : null,

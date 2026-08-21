@@ -13,6 +13,20 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 new #[Title('Panel')] class extends Component {
+    /**
+     * Quien solo consulta precios (asistentas sociales, personal de servicios) no
+     * tiene nada que hacer en el panel de recaudacion: se le lleva directo a su
+     * pantalla en vez de mostrarle indicadores en blanco.
+     */
+    public function mount()
+    {
+        $user = Auth::user();
+
+        if (! $user->canDo('caja.view') && $user->canDo('caja.prices.view')) {
+            return $this->redirectRoute('caja.prices.lookup', navigate: true);
+        }
+    }
+
     #[Computed]
     public function pendingVoids()
     {
