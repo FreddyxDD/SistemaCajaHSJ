@@ -204,13 +204,16 @@ new #[Title('Nuevo cobro')] class extends Component {
             ->where('cod_jerar_forma_pago', $this->paymentMethodCode)
             ->with('billableItem');
 
+        // Un servicio retirado del catalogo no se puede cobrar, se llegue a el por
+        // busqueda o navegando: el filtro va siempre. Y agrupado, porque sin el
+        // parentesis el OR se lleva por delante la correlacion del EXISTS y el
+        // subconsulta deja de filtrar por el item.
+        $query->whereHas('billableItem', fn ($q) => $q->where(
+            fn ($activo) => $activo->where('estado_nomenclatura', true)->orWhereNull('estado_nomenclatura')
+        ));
+
         if (mb_strlen(trim($this->itemQuery)) >= 2) {
             $query->whereHas('billableItem', fn ($q) => $q->search($this->itemQuery));
-        } else {
-            // Sin busqueda: muestra un listado navegable por defecto en vez de dejar
-            // el catalogo vacio hasta que el cajero escriba algo.
-            $query->whereHas('billableItem', fn ($q) => $q->where('estado_nomenclatura', true)
-                ->orWhereNull('estado_nomenclatura'));
         }
 
         if ($this->categoryFilter) {
@@ -698,10 +701,23 @@ new #[Title('Nuevo cobro')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-4 flex items-center justify-between">
         <flux:heading size="xl">Nuevo cobro</flux:heading>
-        <flux:badge color="green">Turno {{ $this->currentSession?->cod_aper_cierre_caja }}</flux:badge>
+        <flux:badge :color="$this->currentSession?->exceedsMaxDuration() ? 'amber' : 'green'">
+            Turno {{ $this->currentSession?->cod_aper_cierre_caja }}
+        </flux:badge>
     </div>
+
+    {{-- A nombre de quién se van a emitir estas boletas. Va antes del formulario y en
+         grande a propósito: es el error más caro de esta pantalla. --}}
+    <x-current-cashier-banner :session="$this->currentSession" class="mb-6">
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <flux:button type="submit" size="sm" variant="ghost" icon="arrow-right-start-on-rectangle">
+                No soy yo, cerrar sesión
+            </flux:button>
+        </form>
+    </x-current-cashier-banner>
 
     @if (session('status'))
         <flux:callout variant="warning" heading="{{ session('status') }}" class="mb-4" />

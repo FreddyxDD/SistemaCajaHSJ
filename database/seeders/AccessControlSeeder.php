@@ -36,6 +36,7 @@ class AccessControlSeeder extends Seeder
             ['code' => 'caja.cashiers.view', 'name' => 'Ver cajeros y sus turnos', 'module' => 'Caja'],
             ['code' => 'caja.registers.manage', 'name' => 'Administrar puntos de cobro', 'module' => 'Caja'],
             ['code' => 'caja.catalog.manage', 'name' => 'Administrar catalogo y formas de pago', 'module' => 'Caja'],
+            ['code' => 'caja.catalog.audit', 'name' => 'Ver auditoria de cambios del catalogo', 'module' => 'Caja'],
             ['code' => 'reports.view', 'name' => 'Ver reportes y analitica', 'module' => 'Reportes'],
             ['code' => 'users.view', 'name' => 'Ver usuarios del aplicativo', 'module' => 'Usuarios'],
             ['code' => 'users.manage', 'name' => 'Crear, editar y asignar roles a usuarios', 'module' => 'Usuarios'],
@@ -74,13 +75,13 @@ class AccessControlSeeder extends Seeder
             'administrador' => $permissions->pluck('code')->all(),
             'jefe_economia' => [
                 'caja.view', 'caja.cashiers.view', 'caja.void.request', 'caja.void.approve',
-                'caja.registers.manage', 'caja.catalog.manage', 'reports.view',
+                'caja.registers.manage', 'caja.catalog.manage', 'caja.catalog.audit', 'reports.view',
                 'users.view', 'users.manage',
             ],
             'cajero_central' => [
                 'caja.view', 'caja.session.open', 'caja.session.close', 'caja.charge.create',
                 'caja.cashiers.view', 'caja.void.request', 'caja.void.approve',
-                'caja.catalog.manage', 'reports.view', 'users.view',
+                'caja.catalog.manage', 'caja.catalog.audit', 'reports.view', 'users.view',
             ],
             'cajero' => [
                 'caja.view', 'caja.session.open', 'caja.session.close',
@@ -89,9 +90,9 @@ class AccessControlSeeder extends Seeder
             'supervisor_caja' => [
                 'caja.view', 'caja.session.open', 'caja.session.close', 'caja.charge.create',
                 'caja.cashiers.view', 'caja.void.request',
-                'caja.registers.manage', 'caja.catalog.manage', 'reports.view',
+                'caja.registers.manage', 'caja.catalog.manage', 'caja.catalog.audit', 'reports.view',
             ],
-            'auditor' => ['caja.view', 'caja.cashiers.view', 'reports.view', 'users.view'],
+            'auditor' => ['caja.view', 'caja.cashiers.view', 'caja.catalog.audit', 'reports.view', 'users.view'],
         ];
 
         $roleIds = AccessRole::query()->where('application_id', $application->id)->pluck('id', 'code');

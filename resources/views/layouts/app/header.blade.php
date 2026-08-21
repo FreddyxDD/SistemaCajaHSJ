@@ -37,7 +37,10 @@
                     ? ['identification', route('admin.legacy-cashiers.index'), 'admin.legacy-cashiers.*', __('Cajeros del sistema'), null, []]
                     : null,
                 $u?->canDo('caja.catalog.manage')
-                    ? ['tag', route('admin.catalog.index'), 'admin.catalog.*', __('Catálogo y precios'), null, []]
+                    ? ['tag', route('admin.catalog.index'), 'admin.catalog.index', __('Catálogo y precios'), null, []]
+                    : null,
+                $u?->canDo('caja.catalog.audit')
+                    ? ['clipboard-document-list', route('admin.catalog.audit'), 'admin.catalog.audit', __('Auditoría del catálogo'), null, []]
                     : null,
             ]));
 

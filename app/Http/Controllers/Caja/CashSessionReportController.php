@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Caja;
 use App\Http\Controllers\Controller;
 use App\Models\Caja\CashSession;
 use App\Models\Caja\ChargeDocument;
+use App\Support\Caja\LegacyIdGenerator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,15 @@ class CashSessionReportController extends Controller
     public function __invoke(string $sessionCode): View
     {
         $session = CashSession::query()->findOrFail($sessionCode);
+
+        // El cajero imprime sus propios turnos; ver los de otros cajeros exige el
+        // permiso de supervision.
+        abort_unless(
+            Auth::user()?->canDo('caja.cashiers.view')
+                || $session->cod_usu === LegacyIdGenerator::legacyUserCode(Auth::user()),
+            403,
+            'Solo puedes imprimir el reporte de tus propios turnos.',
+        );
 
         $cashier = DB::connection('caja')
             ->table('Usuario')

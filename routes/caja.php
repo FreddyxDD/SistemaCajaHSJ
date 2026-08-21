@@ -19,7 +19,7 @@ Route::middleware(['auth', 'verified'])->prefix('caja')->name('caja.')->group(fu
 
     // Reporte contable del turno en A4, para imprimir y archivar.
     Route::get('turnos/{sessionCode}/reporte-contable', CashSessionReportController::class)
-        ->middleware('permission:caja.cashiers.view')
+        ->middleware('permission:caja.view')
         ->name('sessions.report');
 
     Route::livewire('cobros', 'pages::caja.charges')
@@ -61,4 +61,9 @@ Route::middleware(['auth', 'verified'])->prefix('administracion')->name('admin.'
     Route::livewire('catalogo', 'pages::admin.catalog')
         ->middleware('permission:caja.catalog.manage')
         ->name('catalog.index');
+
+    // Auditoria de cambios del catalogo: solo lectura, para costos y auditoria interna.
+    Route::livewire('catalogo/auditoria', 'pages::admin.catalog-audit')
+        ->middleware('permission:caja.catalog.audit')
+        ->name('catalog.audit');
 });

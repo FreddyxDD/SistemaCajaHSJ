@@ -22,4 +22,18 @@ return [
 
     'distrito_por_defecto' => env('CAJA_DISTRITO_DEFECTO', '110201'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Duracion maxima de un turno
+    |--------------------------------------------------------------------------
+    |
+    | Un cajero no debe pasar mas de estas horas en el mismo turno. Superado el
+    | limite el turno se marca como pendiente de cierre: se puede seguir cerrando
+    | (y cobrando, para no dejar al paciente esperando), pero no se permite abrir
+    | otro turno sin cerrar el anterior.
+    |
+    */
+
+    'turno_horas_maximas' => env('CAJA_TURNO_HORAS_MAX', 12),
+
 ];

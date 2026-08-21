@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Caja\CashSession;
 use App\Models\Caja\ChargeDocument;
 use App\Support\Caja\LegacyDate;
 use Illuminate\Support\Facades\DB;
@@ -105,6 +106,36 @@ new #[Title('Cajeros y turnos')] class extends Component {
         return $this->cashiers->firstWhere('cod_usu', $this->cashier)?->nombre;
     }
 
+    /**
+     * Turnos abiertos que ya pasaron el limite de horas, de cualquier cajero y sin
+     * filtro de fecha: son los que descuadran el arqueo, y justamente los mas viejos
+     * caen fuera del rango consultado.
+     */
+    #[Computed]
+    public function staleSessions()
+    {
+        $abiertos = CashSession::query()
+            ->open()
+            ->orderBy('cod_aper_cierre_caja')
+            ->get()
+            ->filter->exceedsMaxDuration()
+            ->values();
+
+        if ($abiertos->isEmpty()) {
+            return $abiertos;
+        }
+
+        $nombres = DB::connection('caja')
+            ->table('Usuario')
+            ->whereIn('cod_usu', $abiertos->pluck('cod_usu'))
+            ->pluck('nom_usu', 'cod_usu');
+
+        return $abiertos->each(fn ($session) => $session->setAttribute(
+            'nombre_cajero',
+            trim((string) ($nombres[$session->cod_usu] ?? '')) ?: $session->cod_usu,
+        ));
+    }
+
     #[Computed]
     public function totals(): array
     {
@@ -138,6 +169,44 @@ new #[Title('Cajeros y turnos')] class extends Component {
             <flux:input type="date" wire:model.live="to" class="w-40" />
         </div>
     </div>
+
+    {{-- Turnos que nadie cerró: el desorden que hay que perseguir. No depende del
+         filtro de fechas porque los peores casos son siempre los más viejos. --}}
+    @if ($this->staleSessions->isNotEmpty())
+        <flux:callout variant="warning" heading="{{ $this->staleSessions->count() }} turno(s) abiertos superan las {{ (int) \App\Models\Caja\CashSession::maxHours() }} horas">
+            <flux:text class="text-sm">
+                Estos turnos siguen aceptando cobros y su cajero no puede abrir uno nuevo hasta cerrarlos.
+            </flux:text>
+
+            <div class="mt-3 space-y-2">
+                @foreach ($this->staleSessions as $pendiente)
+                    <div class="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/60 p-2 dark:bg-white/5">
+                        <flux:text class="text-sm">
+                            <span class="font-semibold">{{ $pendiente->nombre_cajero }}</span>
+                            · turno {{ $pendiente->cod_aper_cierre_caja }}
+                            · abierto {{ $pendiente->fecha_apertura }} {{ $pendiente->hora_apertura }}
+                            · <span class="font-medium text-amber-700 dark:text-amber-300">{{ $pendiente->durationLabel() }}</span>
+                        </flux:text>
+
+                        <div class="flex items-center gap-2">
+                            <flux:button href="{{ route('caja.sessions.show', $pendiente->cod_aper_cierre_caja) }}" wire:navigate size="xs" variant="ghost">
+                                Ver turno
+                            </flux:button>
+                            <flux:button
+                                href="{{ route('caja.sessions.report', [$pendiente->cod_aper_cierre_caja, 'imprimir' => 1]) }}"
+                                target="_blank"
+                                size="xs"
+                                variant="ghost"
+                                icon="printer"
+                            >
+                                Imprimir
+                            </flux:button>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </flux:callout>
+    @endif
 
     {{-- Resumen del periodo --}}
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">

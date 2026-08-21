@@ -2,6 +2,7 @@
 
 namespace App\Support\Caja;
 
+use App\Models\Caja\BillableItem;
 use App\Models\Caja\CashSession;
 use App\Models\Caja\ChargeDocument;
 use App\Models\Caja\ChargeDocumentItem;
@@ -34,6 +35,12 @@ class LegacyIdGenerator
     public static function nextDocumentItemId(): string
     {
         return self::nextPrefixedCode(ChargeDocumentItem::class, 'id_cod_det', 'DD', 18);
+    }
+
+    /** cod_nomen_caja observado en Nomenclatura_caja_MH: "NC" + 8 digitos. */
+    public static function nextBillableItemCode(): string
+    {
+        return self::nextPrefixedCode(BillableItem::class, 'cod_nomen_caja', 'NC', 8);
     }
 
     /** cod_precio observado en Precio_MH: "PR" + 14 digitos. */
