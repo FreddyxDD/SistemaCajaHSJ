@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Caja\CashSessionReportController;
 use App\Http\Controllers\Caja\ReceiptTicketController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,11 @@ Route::middleware(['auth', 'verified'])->prefix('caja')->name('caja.')->group(fu
     Route::livewire('turnos/{sessionCode}', 'pages::caja.session-show')
         ->middleware('permission:caja.cashiers.view')
         ->name('sessions.show');
+
+    // Reporte contable del turno en A4, para imprimir y archivar.
+    Route::get('turnos/{sessionCode}/reporte-contable', CashSessionReportController::class)
+        ->middleware('permission:caja.cashiers.view')
+        ->name('sessions.report');
 
     Route::livewire('cobros', 'pages::caja.charges')
         ->middleware('permission:caja.view')
@@ -50,4 +56,9 @@ Route::middleware(['auth', 'verified'])->prefix('administracion')->name('admin.'
     Route::livewire('cajeros-sistema', 'pages::admin.legacy-cashiers')
         ->middleware('permission:users.view')
         ->name('legacy-cashiers.index');
+
+    // Mantenimiento del catalogo facturable y su precio en cada forma de pago.
+    Route::livewire('catalogo', 'pages::admin.catalog')
+        ->middleware('permission:caja.catalog.manage')
+        ->name('catalog.index');
 });

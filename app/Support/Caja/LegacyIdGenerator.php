@@ -6,6 +6,7 @@ use App\Models\Caja\CashSession;
 use App\Models\Caja\ChargeDocument;
 use App\Models\Caja\ChargeDocumentItem;
 use App\Models\Caja\LegacyUsuario;
+use App\Models\Caja\Price;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -33,6 +34,12 @@ class LegacyIdGenerator
     public static function nextDocumentItemId(): string
     {
         return self::nextPrefixedCode(ChargeDocumentItem::class, 'id_cod_det', 'DD', 18);
+    }
+
+    /** cod_precio observado en Precio_MH: "PR" + 14 digitos. */
+    public static function nextPriceCode(): string
+    {
+        return self::nextPrefixedCode(Price::class, 'cod_precio', 'PR', 14);
     }
 
     /**

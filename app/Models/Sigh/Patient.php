@@ -45,12 +45,14 @@ class Patient extends Model
 
     public function getFullNameAttribute(): string
     {
+        // Las columnas son char de ancho fijo: sin recortar, el nombre sale con
+        // decenas de espacios entre apellido y nombre.
         return collect([
             $this->ApellidoPaterno,
             $this->ApellidoMaterno,
             $this->PrimerNombre,
             $this->SegundoNombre,
-        ])->filter()->implode(' ');
+        ])->map(fn ($parte) => trim((string) $parte))->filter()->implode(' ');
     }
 
     public function getSexLabelAttribute(): ?string
