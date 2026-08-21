@@ -1,24 +1,35 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-neutral-100 antialiased dark:bg-linear-to-b dark:from-neutral-950 dark:to-neutral-900">
-        <div class="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div class="flex w-full max-w-md flex-col gap-6">
-                <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>
-                    <span class="flex h-9 w-9 items-center justify-center rounded-md">
-                        <x-app-logo-icon class="size-9 fill-current text-black dark:text-white" />
-                    </span>
-
-                    <span class="sr-only">{{ config('app.name', 'Laravel') }}</span>
-                </a>
-
-                <div class="flex flex-col gap-6">
-                    <div class="rounded-xl border bg-white dark:bg-stone-950 dark:border-stone-800 text-stone-800 shadow-xs">
-                        <div class="px-10 py-8">{{ $slot }}</div>
+    <body
+        class="min-h-screen bg-white antialiased dark:bg-[#14171a] dark:text-[#eef1f3]"
+        style="
+            background-image:
+                radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--color-accent) 14%, transparent), transparent 45%),
+                radial-gradient(circle at 85% 15%, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 40%);
+        "
+    >
+        <div class="flex min-h-svh flex-col items-center justify-center p-6">
+            {{-- Tarjeta de 380px del rediseño: logo + identificacion del hospital arriba,
+                 el formulario de la pantalla en el slot y la vuelta a la landing al pie. --}}
+            <div class="acrilico flex w-full max-w-[380px] flex-col gap-4 p-8">
+                <div class="flex items-center gap-3">
+                    <x-hospital-logo size="size-11" class="shrink-0" />
+                    <div>
+                        <div class="text-xs font-extrabold tracking-[0.07em] text-accent uppercase">
+                            {{ __('Hospital San José de Chincha') }}
+                        </div>
+                        <flux:heading size="lg" class="mt-1">{{ __('Sistema de Caja') }}</flux:heading>
                     </div>
                 </div>
+
+                {{ $slot }}
+
+                <flux:link href="{{ route('home') }}" class="block text-center text-sm" wire:navigate>
+                    ← {{ __('Volver al inicio') }}
+                </flux:link>
             </div>
         </div>
 

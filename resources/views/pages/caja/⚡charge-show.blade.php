@@ -107,7 +107,7 @@ new #[Title('Detalle de cobro')] class extends Component {
     }
 }; ?>
 
-<section class="w-full max-w-3xl mx-auto space-y-6">
+<section class="w-full space-y-6">
     {{--
         Impresion del ticket. Se hace en un iframe oculto que carga la ruta del
         ticket (formato ticketera): asi se imprime solo el comprobante y no esta
@@ -143,9 +143,9 @@ new #[Title('Detalle de cobro')] class extends Component {
     </div>
 
     @if (session('ok'))
-        <div class="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 print:hidden dark:border-emerald-500/30 dark:bg-emerald-400/10">
-            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <flux:text class="text-emerald-800 dark:text-emerald-300">{{ session('ok') }}</flux:text>
+        <div class="flex items-start gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4 print:hidden dark:border-indigo-500/30 dark:bg-indigo-400/10">
+            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
+            <flux:text class="text-indigo-800 dark:text-indigo-300">{{ session('ok') }}</flux:text>
         </div>
     @endif
 
@@ -162,7 +162,7 @@ new #[Title('Detalle de cobro')] class extends Component {
             </div>
         </div>
     @elseif ($this->voidRequest && $this->voidRequest->status === \App\Models\VoidRequest::STATUS_REJECTED)
-        <div class="flex items-start gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-4 print:hidden dark:border-white/10 dark:bg-white/5">
+        <div class="flex items-start gap-3 acrilico rounded-xl border border-zinc-200 bg-zinc-50 p-4 print:hidden dark:border-white/10 dark:bg-white/5">
             <flux:icon.x-circle class="mt-0.5 size-5 shrink-0 text-zinc-500" />
             <div>
                 <flux:text class="font-medium">Solicitud de anulación rechazada</flux:text>

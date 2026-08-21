@@ -136,7 +136,7 @@ new #[Title('Solicitudes de anulación')] class extends Component {
     }
 }; ?>
 
-<section class="w-full max-w-5xl mx-auto space-y-6">
+<section class="w-full space-y-6">
     <div>
         <flux:heading size="xl">Solicitudes de anulación</flux:heading>
         <flux:text class="text-zinc-500">
@@ -149,9 +149,9 @@ new #[Title('Solicitudes de anulación')] class extends Component {
     </div>
 
     @if (session('ok'))
-        <div class="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/30 dark:bg-emerald-400/10">
-            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <flux:text class="text-emerald-800 dark:text-emerald-300">{{ session('ok') }}</flux:text>
+        <div class="flex items-start gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-500/30 dark:bg-indigo-400/10">
+            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
+            <flux:text class="text-indigo-800 dark:text-indigo-300">{{ session('ok') }}</flux:text>
         </div>
     @endif
 
@@ -169,7 +169,7 @@ new #[Title('Solicitudes de anulación')] class extends Component {
             <button
                 type="button"
                 wire:click="setStatusFilter('{{ $key }}')"
-                class="flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium {{ $statusFilter === $key ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-400' : 'border-zinc-300 hover:border-emerald-500 dark:border-zinc-600' }}"
+                class="flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium {{ $statusFilter === $key ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-400' : 'border-zinc-300 hover:border-indigo-500 dark:border-zinc-600' }}"
             >
                 {{ $label }}
                 <span class="rounded-full bg-zinc-100 px-1.5 text-xs dark:bg-white/10">{{ $count }}</span>

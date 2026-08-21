@@ -54,7 +54,7 @@ new #[Title('Cajeros del sistema')] class extends Component {
     }
 }; ?>
 
-<section class="w-full max-w-5xl mx-auto space-y-6">
+<section class="w-full space-y-6">
     <div>
         <flux:heading size="xl">Cajeros del sistema</flux:heading>
         <flux:text class="text-zinc-500">
@@ -67,7 +67,7 @@ new #[Title('Cajeros del sistema')] class extends Component {
         <button
             type="button"
             wire:click="$set('tipo', 'all')"
-            class="rounded-full border px-3 py-1.5 text-sm font-medium {{ $tipo === 'all' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-400' : 'border-zinc-300 hover:border-emerald-500 dark:border-zinc-600' }}"
+            class="rounded-full border px-3 py-1.5 text-sm font-medium {{ $tipo === 'all' ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-400' : 'border-zinc-300 hover:border-indigo-500 dark:border-zinc-600' }}"
         >
             Todos
         </button>
@@ -75,7 +75,7 @@ new #[Title('Cajeros del sistema')] class extends Component {
             <button
                 type="button"
                 wire:click="$set('tipo', '{{ $t->cod_tipo }}')"
-                class="flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium {{ $tipo === $t->cod_tipo ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-400' : 'border-zinc-300 hover:border-emerald-500 dark:border-zinc-600' }}"
+                class="flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium {{ $tipo === $t->cod_tipo ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-400' : 'border-zinc-300 hover:border-indigo-500 dark:border-zinc-600' }}"
             >
                 {{ ucfirst(mb_strtolower($t->descripcion)) }}
                 <span class="rounded-full bg-zinc-100 px-1.5 text-xs dark:bg-white/10">{{ $t->usuarios }}</span>
@@ -85,7 +85,7 @@ new #[Title('Cajeros del sistema')] class extends Component {
 
     <flux:input wire:model.live.debounce.400ms="q" placeholder="Buscar por nombre o código..." icon="magnifying-glass" />
 
-    <div class="overflow-hidden rounded-xl border border-zinc-200 dark:border-white/10">
+    <div class="overflow-hidden acrilico rounded-xl border border-zinc-200 dark:border-white/10">
         <div class="divide-y dark:divide-white/10">
             @forelse ($this->usuarios as $u)
                 <div class="flex items-center gap-4 px-4 py-3">

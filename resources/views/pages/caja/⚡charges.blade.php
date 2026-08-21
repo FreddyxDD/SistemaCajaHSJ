@@ -32,7 +32,7 @@ new #[Title('Cobros')] class extends Component {
     }
 }; ?>
 
-<section class="w-full max-w-5xl mx-auto space-y-6">
+<section class="w-full space-y-6">
     <div class="flex items-center justify-between">
         <flux:heading size="xl">Cobros</flux:heading>
         <flux:button href="{{ route('caja.charges.create') }}" variant="primary">Nuevo cobro</flux:button>

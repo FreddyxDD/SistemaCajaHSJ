@@ -72,7 +72,7 @@ new #[Title('Turno de caja')] class extends Component {
     }
 }; ?>
 
-<section class="w-full max-w-3xl mx-auto space-y-6">
+<section class="w-full space-y-6">
     <flux:heading size="xl">Turno de caja</flux:heading>
 
     @error('session')

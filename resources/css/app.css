@@ -4,6 +4,8 @@
 @import '../../vendor/livewire/flux/dist/flux.css';
 
 @source '../views';
+/* Las clases de color por forma de pago viven en PHP, no en Blade. */
+@source '../../app/Support/Caja/PaymentMethodPalette.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
 @source '../../vendor/livewire/flux/stubs/**/*.blade.php';
@@ -27,16 +29,39 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
-    --color-accent-foreground: var(--color-white);
+    /* Color de marca (indigo) definido en el rediseño; ver
+       docs/design/handoff-rediseno-ui.md */
+    --color-accent: #4c5fd5;
+    --color-accent-content: #4c5fd5;
+    --color-accent-foreground: #ffffff;
+
+    /* Rampa derivada del acento con color-mix, igual que el prototipo. */
+    --color-accent-100: color-mix(in srgb, #4c5fd5 12%, white);
+    --color-accent-200: color-mix(in srgb, #4c5fd5 24%, white);
+    --color-accent-300: color-mix(in srgb, #4c5fd5 42%, white);
+    --color-accent-400: color-mix(in srgb, #4c5fd5 68%, white);
+    --color-accent-500: #4c5fd5;
+    --color-accent-600: color-mix(in srgb, #4c5fd5 88%, black);
+    --color-accent-700: color-mix(in srgb, #4c5fd5 74%, black);
+    --color-accent-800: color-mix(in srgb, #4c5fd5 58%, black);
+    --color-accent-900: color-mix(in srgb, #4c5fd5 42%, black);
+
+    /* Radios del rediseño (estilo Windows 11). */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 18px;
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        /* Variante clara del indigo para que contraste sobre fondo oscuro. */
+        --color-accent: #7b87e6;
+        --color-accent-content: #7b87e6;
+        --color-accent-foreground: #14171a;
+
+        --color-accent-500: #7b87e6;
+        --color-accent-600: color-mix(in srgb, #7b87e6 88%, black);
+        --color-accent-700: color-mix(in srgb, #7b87e6 74%, black);
     }
 }
 
@@ -69,12 +94,195 @@ select:focus[data-flux-control] {
     @apply size-4;
 } */
 
+/* Evita el parpadeo de los elementos que Alpine oculta al cargar. */
+[x-cloak] {
+    display: none !important;
+}
+
+/*
+ * Estilo acrilico / Windows 11 del rediseño (docs/design/handoff-rediseno-ui.md).
+ * Se aplica a las tarjetas de Flux y a la barra de navegacion.
+ */
+/* `.acrilico` se aplica a los paneles escritos a mano; [data-flux-card] cubre las
+   tarjetas de Flux. Ambos comparten el mismo tratamiento. */
+/* El blur se declara con utilidades de Tailwind: al escribirlo como
+   `backdrop-filter:` plano, el compilador CSS lo descarta y el efecto se pierde. */
+[data-flux-card],
+.acrilico {
+    @apply backdrop-blur-xl backdrop-saturate-150;
+
+    background: color-mix(in srgb, var(--color-white) 72%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-zinc-900) 8%, transparent);
+    border-radius: var(--radius-lg);
+}
+
+.dark [data-flux-card],
+.dark .acrilico {
+    background: color-mix(in srgb, #1e2226 72%, transparent);
+    border-color: color-mix(in srgb, #eef1f3 8%, transparent);
+}
+
+.acrilico-nav {
+    @apply backdrop-blur-lg backdrop-saturate-150;
+
+    background: color-mix(in srgb, var(--color-white) 75%, transparent);
+}
+
+.dark .acrilico-nav {
+    background: color-mix(in srgb, #14171a 75%, transparent);
+}
+
+@keyframes win11-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+[data-flux-card],
+.acrilico,
+[data-flux-main] > * {
+    animation: win11-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/*
+ * Movimiento del rediseño v2 (docs/design/handoff-rediseno-ui-v2.md).
+ * Los valores (duraciones, delays, angulos) son los del prototipo.
+ */
+
+/* Entrada en cascada del hero: badge -> titulo -> copy -> CTA. */
+@keyframes hero-rise {
+    from {
+        opacity: 0;
+        transform: translateY(22px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.hero-rise-1 { animation: hero-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero-rise-2 { animation: hero-rise 0.6s 0.08s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero-rise-3 { animation: hero-rise 0.6s 0.16s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero-rise-4 { animation: hero-rise 0.6s 0.24s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Orbes de fondo del hero. */
+@keyframes hero-float {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(0, -18px); }
+}
+
+.hero-orb {
+    animation: hero-float 7s ease-in-out infinite;
+    filter: blur(40px);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* Entrada del logo con perspectiva. */
+@keyframes logo-spin-in {
+    from {
+        opacity: 0;
+        transform: rotateY(90deg) scale(0.6);
+    }
+
+    to {
+        opacity: 1;
+        transform: rotateY(0) scale(1);
+    }
+}
+
+.logo-3d {
+    animation: logo-spin-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+    transform-style: preserve-3d;
+}
+
+/* Hover/press genericos: elevacion en tarjetas y hundido en botones. */
+.lift,
+[data-flux-button],
+button {
+    transition:
+        transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.22s ease,
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px color-mix(in srgb, var(--color-zinc-900) 18%, transparent);
+}
+
+.dark .lift:hover {
+    box-shadow: 0 12px 32px rgb(0 0 0 / 0.6);
+}
+
+[data-flux-button]:active,
+button:active {
+    transform: scale(0.96);
+}
+
+/* Tarjetas con inclinacion 3D segun el cursor (el angulo lo calcula Alpine). */
+.tilt {
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+/* Barras del grafico de 7 dias: crecen al montar / al cambiar de datos. */
+.bar-grow {
+    transition: height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Respeta a quien pide menos movimiento en el sistema operativo. */
+@media (prefers-reduced-motion: reduce) {
+
+    [data-flux-card],
+    .acrilico,
+    [data-flux-main] > *,
+    .hero-rise-1,
+    .hero-rise-2,
+    .hero-rise-3,
+    .hero-rise-4,
+    .hero-orb,
+    .logo-3d {
+        animation: none;
+    }
+
+    .lift,
+    .tilt,
+    .bar-grow,
+    [data-flux-button],
+    button {
+        transition: none;
+    }
+
+    .lift:hover {
+        transform: none;
+    }
+}
+
 /*
  * La boleta se imprime desde un iframe oculto con la vista `caja.ticket` (formato
  * ticketera), no desde esta pagina. Estas reglas son el respaldo por si alguien usa
  * Ctrl+P sobre la pantalla: al menos no imprime el menu ni sale en oscuro.
  */
 @media print {
+
+    /* El acrilico y la animacion no deben afectar la impresion. */
+    [data-flux-card] {
+        background: #fff !important;
+        backdrop-filter: none !important;
+        animation: none !important;
+    }
+
 
     [data-flux-sidebar],
     [data-flux-header],

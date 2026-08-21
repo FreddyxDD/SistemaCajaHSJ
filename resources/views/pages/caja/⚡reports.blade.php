@@ -110,7 +110,7 @@ new #[Title('Reportes de caja')] class extends Component {
     }
 }; ?>
 
-<section class="w-full max-w-6xl mx-auto space-y-6">
+<section class="w-full space-y-6">
     <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
             <flux:heading size="xl">Reportes de caja</flux:heading>
@@ -129,19 +129,19 @@ new #[Title('Reportes de caja')] class extends Component {
     </div>
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
             <flux:text class="text-sm text-zinc-500">Total recaudado</flux:text>
-            <div class="mt-1 text-2xl font-semibold text-emerald-600 dark:text-emerald-400">S/ {{ number_format($this->summary['total'], 2) }}</div>
+            <div class="mt-1 text-2xl font-semibold text-indigo-600 dark:text-indigo-400">S/ {{ number_format($this->summary['total'], 2) }}</div>
         </div>
-        <div class="rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
             <flux:text class="text-sm text-zinc-500">Comprobantes emitidos</flux:text>
             <div class="mt-1 text-2xl font-semibold">{{ $this->summary['cobros'] }}</div>
         </div>
-        <div class="rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
             <flux:text class="text-sm text-zinc-500">Ticket promedio</flux:text>
             <div class="mt-1 text-2xl font-semibold">S/ {{ number_format($this->summary['ticket_promedio'], 2) }}</div>
         </div>
-        <div class="rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
             <flux:text class="text-sm text-zinc-500">Anulados</flux:text>
             <div class="mt-1 text-2xl font-semibold {{ $this->summary['anulados_cobros'] > 0 ? 'text-red-600 dark:text-red-400' : '' }}">
                 {{ $this->summary['anulados_cobros'] }}
@@ -151,7 +151,7 @@ new #[Title('Reportes de caja')] class extends Component {
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div class="rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
             <flux:subheading class="mb-4">Recaudación por forma de pago</flux:subheading>
 
             @if ($this->byPaymentGroup->isEmpty())
@@ -181,7 +181,7 @@ new #[Title('Reportes de caja')] class extends Component {
             @endif
         </div>
 
-        <div class="rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
             <flux:subheading class="mb-4">Top 10 servicios facturados</flux:subheading>
 
             @if ($this->topServices->isEmpty())
@@ -200,7 +200,7 @@ new #[Title('Reportes de caja')] class extends Component {
         </div>
     </div>
 
-    <div class="rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+    <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
         <flux:subheading class="mb-4">Recaudación por día</flux:subheading>
 
         @if ($this->byDay->isEmpty())
@@ -211,7 +211,7 @@ new #[Title('Reportes de caja')] class extends Component {
                 @foreach ($this->byDay as $day)
                     <div class="flex h-full min-w-8 flex-1 flex-col items-center justify-end gap-1" title="{{ \Illuminate\Support\Carbon::parse($day->dia)->format('d/m/Y') }}: S/ {{ number_format($day->total, 2) }}">
                         <div class="flex w-full flex-1 items-end rounded-md bg-zinc-100 dark:bg-white/10">
-                            <div class="w-full rounded-md bg-emerald-500 dark:bg-emerald-400" style="height: {{ max(4, round($day->total / $maxDay * 100)) }}%"></div>
+                            <div class="w-full rounded-md bg-indigo-500 dark:bg-indigo-400" style="height: {{ max(4, round($day->total / $maxDay * 100)) }}%"></div>
                         </div>
                         <flux:text class="text-[10px] text-zinc-500">{{ \Illuminate\Support\Carbon::parse($day->dia)->format('d/m') }}</flux:text>
                     </div>

@@ -12,4 +12,8 @@
 @fonts
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+{{-- Maneja el tema claro/oscuro (clase `dark` en <html>) y lo persiste. No agregar
+     un script propio de tema: competiria con este y el modo no sobreviviria a la
+     recarga. Para cambiarlo desde la UI se usa `$flux.dark` / `$flux.appearance`. --}}
 @fluxAppearance

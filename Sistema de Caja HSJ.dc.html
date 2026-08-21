@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-f1b2c717-da9a-4252-b139-b6fa022d0100/styles.css">
+  <script src="_ds/modernist-f1b2c717-da9a-4252-b139-b6fa022d0100/_ds_bundle.js"></script>
+  <style>
+    body { margin: 0; }
+    a { color: var(--color-accent); }
+    a:hover { color: var(--color-accent-600); }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+
+    /* Accent is a picked palette color (--accent-base, set inline from the tweak); ramps derive from it live via color-mix.
+       Selector must match the element carrying the inline --accent-base (the app root div), not :root/html, or the var() never sees it. */
+    :root, [data-theme] {
+      --radius-sm: 6px; --radius-md: 10px; --radius-lg: 18px;
+      --color-accent: var(--accent-base); --color-accent-2: var(--accent-base);
+      --color-accent-100: color-mix(in srgb, var(--color-accent) 12%, white);
+      --color-accent-200: color-mix(in srgb, var(--color-accent) 24%, white);
+      --color-accent-300: color-mix(in srgb, var(--color-accent) 42%, white);
+      --color-accent-400: color-mix(in srgb, var(--color-accent) 68%, white);
+      --color-accent-500: var(--color-accent);
+      --color-accent-600: color-mix(in srgb, var(--color-accent) 88%, black);
+      --color-accent-700: color-mix(in srgb, var(--color-accent) 74%, black);
+      --color-accent-800: color-mix(in srgb, var(--color-accent) 58%, black);
+      --color-accent-900: color-mix(in srgb, var(--color-accent) 42%, black);
+      --color-accent-2-100: var(--color-accent-100); --color-accent-2-200: var(--color-accent-200); --color-accent-2-300: var(--color-accent-300);
+      --color-accent-2-400: var(--color-accent-400); --color-accent-2-500: var(--color-accent-500); --color-accent-2-600: var(--color-accent-600);
+      --color-accent-2-700: var(--color-accent-700); --color-accent-2-800: var(--color-accent-800); --color-accent-2-900: var(--color-accent-900);
+    }
+    [data-theme="dark"] {
+      --color-bg: #14171a; --color-surface: #1e2226; --color-text: #eef1f3;
+      --color-divider: color-mix(in srgb, #eef1f3 22%, transparent);
+      --color-neutral-100: #262a2f; --color-neutral-200: #2f3339; --color-neutral-300: #3b3f46; --color-neutral-400: #565b62;
+      --color-neutral-500: #767b82; --color-neutral-600: #9aa0a6; --color-neutral-700: #bcc1c6; --color-neutral-800: #dde0e3; --color-neutral-900: #f5f6f7;
+      --color-accent: color-mix(in srgb, var(--accent-base) 62%, white);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.4); --shadow-md: 0 3px 10px rgba(0,0,0,0.45); --shadow-lg: 0 12px 32px rgba(0,0,0,0.6);
+    }
+
+    /* Windows 11 style: rounded corners, acrylic/mica translucency, entrance motion on load. */
+    .card, .dialog, .input, textarea.input, .seg, .btn, .tag, .dialog-backdrop { border-radius: var(--radius-md); }
+    .dialog { border-radius: var(--radius-lg); }
+    .card {
+      background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+      backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%);
+      border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+    }
+    .dialog {
+      background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+      backdrop-filter: blur(28px) saturate(160%); -webkit-backdrop-filter: blur(28px) saturate(160%);
+      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+    }
+    .dialog-backdrop { backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+    .nav {
+      background: color-mix(in srgb, var(--color-bg) 75%, transparent);
+      backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+      position: sticky; top: 0; z-index: 30;
+    }
+    .input, textarea.input { background: color-mix(in srgb, var(--color-surface) 80%, transparent); }
+    @keyframes win11-in { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: none; } }
+    .card, .dialog { animation: win11-in 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+    main > * { animation: win11-in 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+
+    /* Motion: hover lift + press feedback, nav underline slide, floating hero orbs, 3D tilt on feature cards. */
+    .card, .btn, .tag, a { transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), box-shadow 0.22s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+    .btn:active { transform: scale(0.96); }
+    .card.tilt { transform-style: preserve-3d; will-change: transform; }
+    .card.lift:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    @keyframes hero-float { 0%,100% { transform: translate(0,0); } 50% { transform: translate(0,-18px); } }
+    .hero-orb { animation: hero-float 7s ease-in-out infinite; }
+    @keyframes hero-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+    .hero-rise-1 { animation: hero-rise 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+    .hero-rise-2 { animation: hero-rise 0.6s 0.08s cubic-bezier(0.16,1,0.3,1) both; }
+    .hero-rise-3 { animation: hero-rise 0.6s 0.16s cubic-bezier(0.16,1,0.3,1) both; }
+    .hero-rise-4 { animation: hero-rise 0.6s 0.24s cubic-bezier(0.16,1,0.3,1) both; }
+    @keyframes logo-spin-in { from { opacity: 0; transform: rotateY(90deg) scale(0.6); } to { opacity: 1; transform: rotateY(0) scale(1); } }
+    .logo-3d { animation: logo-spin-in 0.7s cubic-bezier(0.16,1,0.3,1) both; transform-style: preserve-3d; }
+    @keyframes count-bar { from { height: 0; } }
+    .kpi-num { animation: hero-rise 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+  </style>
+</helmet>
+
+<div data-theme="{{ theme }}" style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);--accent-base:{{ accentColor }};">
+
+  <sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100vh;display:flex;flex-direction:column;background:radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--color-accent) 14%, transparent), transparent 45%), radial-gradient(circle at 85% 15%, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 40%), var(--color-bg);">
+      <nav class="nav" style="padding:10px 32px;">
+        <span class="nav-brand" style="display:flex;align-items:center;gap:10px;white-space:nowrap;">
+          <sc-if value="{{ isDark }}" hint-placeholder-val="{{ false }}"><img src="uploads/logo-dark.png" alt="Hospital San José de Chincha" style="height:34px;width:34px;object-fit:contain;" /></sc-if>
+          <sc-if value="{{ isLight }}" hint-placeholder-val="{{ true }}"><img src="uploads/logo.png" alt="Hospital San José de Chincha" style="height:34px;width:34px;object-fit:contain;" /></sc-if>
+          Gestión de Caja HSJ
+        </span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:14px;">
+          <a href="#" onClick="{{ doLogin }}" style="font-size:14px;">Iniciar sesión</a>
+          <button type="button" class="btn btn-primary" onClick="{{ doLogin }}">Crear cuenta</button>
+        </div>
+      </nav>
+
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:72px 24px 40px;gap:20px;position:relative;overflow:hidden;">
+        <div class="hero-orb" style="position:absolute;top:60px;left:8%;width:260px;height:260px;border-radius:50%;background:color-mix(in srgb, var(--color-accent) 18%, transparent);filter:blur(40px);pointer-events:none;z-index:0;"></div>
+        <div class="hero-orb" style="position:absolute;top:120px;right:10%;width:220px;height:220px;border-radius:50%;background:color-mix(in srgb, var(--color-accent) 14%, transparent);filter:blur(40px);pointer-events:none;z-index:0;animation-delay:2s;"></div>
+
+        <div class="logo-3d" style="perspective:600px;position:relative;z-index:1;">
+          <sc-if value="{{ isDark }}" hint-placeholder-val="{{ false }}"><img src="uploads/logo-dark.png" alt="Hospital San José de Chincha" style="height:72px;width:72px;object-fit:contain;" /></sc-if>
+          <sc-if value="{{ isLight }}" hint-placeholder-val="{{ true }}"><img src="uploads/logo.png" alt="Hospital San José de Chincha" style="height:72px;width:72px;object-fit:contain;" /></sc-if>
+        </div>
+        <span class="tag tag-accent hero-rise-1" style="position:relative;z-index:1;">Hospital San José</span>
+        <h1 class="hero-rise-2" style="margin:0;font-size:56px;line-height:1.05;max-width:720px;position:relative;z-index:1;">Gestión de Caja</h1>
+        <p class="hero-rise-3" style="margin:0;max-width:560px;font-size:16px;opacity:0.7;position:relative;z-index:1;">Apertura y cierre de turno, cobro de servicios por paciente y forma de pago, y trazabilidad completa de cada comprobante emitido — en un solo lugar.</p>
+        <button type="button" class="btn btn-primary hero-rise-4" style="padding:12px 28px;font-size:15px;position:relative;z-index:1;" onClick="{{ doLogin }}">Iniciar sesión</button>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:900px;width:100%;margin-top:48px;perspective:900px;position:relative;z-index:1;">
+          <div class="card elev-sm tilt lift" style="align-items:center;text-align:center;gap:10px;padding:24px;" onMouseMove="{{ onTiltMove }}" onMouseLeave="{{ onTiltLeave }}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            <div style="font-weight:600;">Control de turnos</div>
+            <div style="font-size:13px;opacity:0.65;">Apertura y cierre de caja con arqueo automático</div>
+          </div>
+          <div class="card elev-sm tilt lift" style="align-items:center;text-align:center;gap:10px;padding:24px;" onMouseMove="{{ onTiltMove }}" onMouseLeave="{{ onTiltLeave }}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <div style="font-weight:600;">Cobro rápido</div>
+            <div style="font-size:13px;opacity:0.65;">Búsqueda de servicios y emisión de comprobante en segundos</div>
+          </div>
+          <div class="card elev-sm tilt lift" style="align-items:center;text-align:center;gap:10px;padding:24px;" onMouseMove="{{ onTiltMove }}" onMouseLeave="{{ onTiltLeave }}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-4"/></svg>
+            <div style="font-weight:600;">Reportes en vivo</div>
+            <div style="font-size:13px;opacity:0.65;">Recaudación, anulaciones y desempeño de cajeros al día</div>
+          </div>
+        </div>
+      </div>
+
+      <footer style="border-top:1px solid var(--color-divider);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;opacity:0.6;">
+        <span>© 2026 Hospital San José de Chincha — Sistema de Gestión de Caja</span>
+        <span>Creado por Ing. FMC</span>
+      </footer>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;">
+      <div class="card elev-md" style="width:380px;gap:16px;padding:32px;">
+        <div style="text-align:left;display:flex;align-items:center;gap:12px;">
+          <sc-if value="{{ isDark }}" hint-placeholder-val="{{ false }}"><img src="uploads/logo-dark.png" alt="Hospital San José de Chincha" style="height:44px;width:44px;object-fit:contain;flex-shrink:0;" /></sc-if>
+          <sc-if value="{{ isLight }}" hint-placeholder-val="{{ true }}"><img src="uploads/logo.png" alt="Hospital San José de Chincha" style="height:44px;width:44px;object-fit:contain;flex-shrink:0;" /></sc-if>
+          <div>
+            <div style="font-family:var(--font-heading);font-weight:800;font-size:12px;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-accent);">Hospital San José de Chincha</div>
+            <h2 style="margin:4px 0 0;">Sistema de Caja</h2>
+          </div>
+        </div>
+        <div class="field">
+          <label>Correo institucional</label>
+          <input class="input" placeholder="usuario@hospitalsanjose.gob.pe" value="{{ loginEmail }}" onChange="{{ onLoginEmailChange }}" />
+        </div>
+        <div class="field">
+          <label>Contraseña</label>
+          <input class="input" type="password" placeholder="••••••••" value="{{ loginPassword }}" onChange="{{ onLoginPasswordChange }}" />
+        </div>
+        <button type="button" class="btn btn-primary btn-block" onClick="{{ confirmLogin }}">Ingresar</button>
+        <a href="#" style="font-size:13px;text-align:center;display:block;">¿Olvidaste tu contraseña?</a>
+        <a href="#" onClick="{{ goLanding }}" style="font-size:13px;text-align:center;display:block;">← Volver al inicio</a>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+  <nav class="nav" style="padding:10px 32px;flex-wrap:wrap;row-gap:10px;">
+    <span class="nav-brand" style="white-space:nowrap;display:flex;align-items:center;gap:8px;">
+      <sc-if value="{{ isDark }}" hint-placeholder-val="{{ false }}"><img src="uploads/logo-dark.png" alt="HSJ" style="height:28px;width:28px;object-fit:contain;" /></sc-if>
+      <sc-if value="{{ isLight }}" hint-placeholder-val="{{ true }}"><img src="uploads/logo.png" alt="HSJ" style="height:28px;width:28px;object-fit:contain;" /></sc-if>HSJ · CAJA
+    </span>
+
+    <a href="#" onClick="{{ goPanel }}" style="{{ sPanel }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px;"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Panel</a>
+    <a href="#" onClick="{{ goTurno }}" style="{{ sTurno }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Turno</a>
+    <a href="#" onClick="{{ goCobro }}" style="{{ sCobro }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px;"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Nuevo cobro</a>
+    <a href="#" onClick="{{ goComprobantes }}" style="{{ sComprobantes }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg>Comprobantes</a>
+    <a href="#" onClick="{{ goAnulaciones }}" style="{{ sAnulaciones }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px;"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>Anulaciones<sc-if value="{{ hasPendingVoids }}" hint-placeholder-val="{{ false }}"><span class="tag tag-accent" style="margin-left:6px;">{{ pendingVoidsCount }}</span></sc-if></a>
+    <a href="#" onClick="{{ goCajeros }}" style="{{ sCajeros }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Cajeros</a>
+    <a href="#" onClick="{{ goReportes }}" style="{{ sReportes }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px;"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-4"/></svg>Reportes</a>
+    <a href="#" onClick="{{ goAdmin }}" style="{{ sAdmin }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px;"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5z"/></svg>Administración</a>
+
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+      <div style="width:1px;height:24px;background:var(--color-divider);"></div>
+      <button type="button" class="btn btn-ghost btn-icon" aria-label="Cambiar tema" onClick="{{ toggleTheme }}">
+        <sc-if value="{{ isDark }}" hint-placeholder-val="{{ false }}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </sc-if>
+        <sc-if value="{{ isLight }}" hint-placeholder-val="{{ true }}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </sc-if>
+      </button>
+      <div style="position:relative;">
+        <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onClick="{{ toggleUserMenu }}">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--color-neutral-800);color:var(--color-bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;font-family:var(--font-heading);">MS</div>
+          <div style="line-height:1.2;">
+            <div style="font-size:13px;font-weight:600;">Miriam Solís</div>
+            <div style="font-size:11px;color:color-mix(in srgb, var(--color-text) 55%, transparent);">Supervisor</div>
+          </div>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <sc-if value="{{ userMenuOpen }}" hint-placeholder-val="{{ false }}">
+          <div class="card elev-md" style="position:absolute;right:0;top:calc(100% + 8px);width:200px;gap:2px;padding:8px;z-index:20;">
+            <a href="#" onClick="{{ goPerfil }}" style="display:flex;align-items:center;gap:8px;padding:8px;font-size:13px;text-decoration:none;color:var(--color-text);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>Configuración</a>
+            <a href="#" onClick="{{ doLogout }}" style="display:flex;align-items:center;gap:8px;padding:8px;font-size:13px;text-decoration:none;color:var(--color-text);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>Cerrar sesión</a>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </nav>
+
+  <main style="max-width:1360px;margin:0 auto;padding:32px;display:flex;flex-direction:column;gap:24px;">
+
+    <sc-if value="{{ isPanel }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:24px;">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h1 style="margin:0 0 4px;">Panel de recaudación</h1>
+            <div style="font-size:14px;color:color-mix(in srgb, var(--color-text) 55%, transparent);">Hoy, sábado 08 de agosto de 2026</div>
+          </div>
+          <span class="tag tag-outline" style="white-space:nowrap;">Vista de supervisor</span>
+        </div>
+
+        <sc-if value="{{ hasPendingVoids }}" hint-placeholder-val="{{ false }}">
+          <div class="card elev-sm" style="border-left:3px solid var(--color-accent);flex-direction:row;align-items:center;justify-content:space-between;gap:16px;">
+            <div>
+              <div style="font-weight:600;">{{ pendingVoidsCount }} anulaciones pendientes de tu aprobación</div>
+              <div style="font-size:13px;opacity:0.75;margin-top:2px;">{{ pendingVoidsPreview }}</div>
+            </div>
+            <button type="button" class="btn btn-primary" onClick="{{ goAnulaciones }}">Revisar</button>
+          </div>
+        </sc-if>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+          <div class="card elev-sm lift">
+            <div class="card-kicker">Recaudado hoy</div>
+            <div class="kpi-num" style="font-family:var(--font-heading);font-weight:800;font-size:28px;">{{ todayTotalFmt }}</div>
+            <div class="card-body" style="opacity:0.6;">{{ todayCobrosLabel }}</div>
+          </div>
+          <div class="card elev-sm lift">
+            <div class="card-kicker">Ticket promedio</div>
+            <div class="kpi-num" style="font-family:var(--font-heading);font-weight:800;font-size:28px;">{{ todayTicketFmt }}</div>
+            <div class="card-body" style="opacity:0.6;">Por comprobante emitido</div>
+          </div>
+          <div class="card elev-sm lift">
+            <div class="card-kicker">Cajas abiertas</div>
+            <div class="kpi-num" style="font-family:var(--font-heading);font-weight:800;font-size:28px;">{{ openSessionsCount }}</div>
+            <div class="card-body" style="opacity:0.6;">Turnos activos ahora</div>
+          </div>
+          <div class="card elev-sm lift">
+            <div class="card-kicker">Anulados hoy</div>
+            <div class="kpi-num" style="font-family:var(--font-heading);font-weight:800;font-size:28px;">{{ todayAnuladosLabel }}</div>
+            <div class="card-body" style="opacity:0.6;">Comprobantes anulados</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;">
+          <div class="card elev-sm">
+            <h5 style="margin-bottom:16px;">Recaudación — últimos 7 días</h5>
+            <div style="display:flex;align-items:flex-end;gap:12px;height:160px;">
+              <sc-for list="{{ days }}" as="day" hint-placeholder-count="7">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;">
+                  <div style="font-size:11px;opacity:0.65;">{{ day.totalFmt }}</div>
+                  <div style="width:100%;height:110px;background:var(--color-neutral-200);display:flex;align-items:flex-end;overflow:hidden;">
+                    <div style="width:100%;background:var(--color-accent);height:{{ day.pct }}%;transition:height 0.8s cubic-bezier(0.16,1,0.3,1);"></div>
+                  </div>
+                  <div style="font-size:11px;opacity:0.6;">{{ day.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div class="card elev-sm">
+            <h5 style="margin-bottom:16px;">Hoy por forma de pago</h5>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <sc-for list="{{ formas }}" as="f" hint-placeholder-count="5">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+                    <span>{{ f.grupo }}</span>
+                    <span style="font-weight:600;">{{ f.totalFmt }}</span>
+                  </div>
+                  <div style="height:6px;background:var(--color-neutral-200);">
+                    <div style="height:6px;background:var(--color-accent);width:{{ f.pct }}%;"></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div class="card elev-sm">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h5 style="margin:0;">Cajeros hoy</h5>
+            <a href="#" onClick="{{ goCajeros }}" style="font-size:13px;">Ver todos</a>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+            <sc-for list="{{ cajerosHoy }}" as="c" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--color-divider);">
+                <div style="width:34px;height:34px;border-radius:50%;background:var(--color-neutral-200);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-family:var(--font-heading);flex-shrink:0;">{{ c.initials }}</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.nombre }}</div>
+                  <div style="font-size:11px;opacity:0.65;display:flex;align-items:center;gap:6px;">
+                    <span>{{ c.boletas }} bol.</span>
+                    <sc-if value="{{ c.abierto }}" hint-placeholder-val="{{ false }}"><span class="tag tag-accent">abierto</span></sc-if>
+                  </div>
+                </div>
+                <div style="font-size:13px;font-weight:700;color:var(--color-accent-700);flex-shrink:0;">{{ c.recaudadoFmt }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="card elev-sm">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <h5 style="margin:0;">Top servicios — 30 días</h5>
+              <a href="#" onClick="{{ goReportes }}" style="font-size:13px;">Ver reportes</a>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ servicios }}" as="s" hint-placeholder-count="5">
+                <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;">
+                  <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ s.servicio }}</span>
+                  <span style="font-weight:600;flex-shrink:0;">{{ s.totalFmt }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div class="card elev-sm">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <h5 style="margin:0;">Cobros recientes</h5>
+              <a href="#" onClick="{{ goComprobantes }}" style="font-size:13px;">Ver todos</a>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ recientes }}" as="r" hint-placeholder-count="5">
+                <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;cursor:pointer;" onClick="{{ r.onClick }}">
+                  <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.cliente }}</span>
+                  <span style="font-weight:600;flex-shrink:0;">{{ r.totalFmt }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isTurno }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <h1 style="margin:0;">Mi turno de caja</h1>
+
+        <div class="card elev-sm" style="max-width:520px;">
+          <div class="card-kicker">Turno {{ mySessionCode }}</div>
+          <div style="display:flex;align-items:center;gap:10px;margin:4px 0 12px;">
+            <span class="tag {{ mySessionTagClass }}">{{ mySessionStatusLabel }}</span>
+            <span style="font-size:13px;opacity:0.65;">Apertura {{ mySessionApertura }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+              <div style="font-size:12px;opacity:0.6;">Boletas emitidas</div>
+              <div style="font-family:var(--font-heading);font-weight:800;font-size:24px;">{{ mySessionBoletas }}</div>
+            </div>
+            <div>
+              <div style="font-size:12px;opacity:0.6;">Recaudado</div>
+              <div style="font-family:var(--font-heading);font-weight:800;font-size:24px;">{{ mySessionRecaudadoFmt }}</div>
+            </div>
+          </div>
+          <button type="button" class="{{ mySessionButtonClass }} btn-block" onClick="{{ toggleSession }}">{{ mySessionButtonLabel }}</button>
+        </div>
+
+        <div class="card elev-sm">
+          <h5 style="margin-bottom:12px;">Turnos de hoy — todos los cajeros</h5>
+          <table class="table">
+            <thead><tr><th>Turno</th><th>Cajero</th><th>Apertura</th><th>Boletas</th><th>Recaudado</th><th>Estado</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ cajerosHoy }}" as="c" hint-placeholder-count="6">
+                <tr>
+                  <td>{{ c.turno }}</td>
+                  <td>{{ c.nombre }}</td>
+                  <td>{{ c.apertura }}</td>
+                  <td>{{ c.boletas }}</td>
+                  <td>{{ c.recaudadoFmt }}</td>
+                  <td><span class="tag {{ c.tagClass }}">{{ c.estadoLabel }}</span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCobro }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <h1 style="margin:0;">Nuevo cobro</h1>
+
+        <sc-if value="{{ chargeMsg }}" hint-placeholder-val="{{ false }}">
+          <div class="card elev-sm" style="border-left:3px solid var(--color-accent);">{{ chargeMsg }}</div>
+        </sc-if>
+
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:20px;align-items:start;">
+          <div class="card elev-sm" style="gap:16px;">
+            <div class="field">
+              <label>Paciente</label>
+              <input class="input" placeholder="Nombre del paciente" value="{{ pacienteNombre }}" onChange="{{ onPacienteChange }}" />
+            </div>
+
+            <div class="field">
+              <label>Forma de pago</label>
+              <div class="seg" role="radiogroup">
+                <sc-for list="{{ formasPagoOpts }}" as="fp" hint-placeholder-count="6">
+                  <label class="seg-opt"><input type="radio" name="forma" checked="{{ fp.checked }}" onChange="{{ fp.onSelect }}" />{{ fp.label }}</label>
+                </sc-for>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Buscar servicio</label>
+              <input class="input" placeholder="Ej. consulta, ecografía, rayos x…" value="{{ servicioQuery }}" onChange="{{ onServicioQueryChange }}" />
+            </div>
+
+            <table class="table">
+              <thead><tr><th>Servicio</th><th style="text-align:right;">Precio</th><th></th></tr></thead>
+              <tbody>
+                <sc-for list="{{ filteredServicios }}" as="s" hint-placeholder-count="4">
+                  <tr>
+                    <td>{{ s.nombre }}</td>
+                    <td style="text-align:right;">{{ s.precioFmt }}</td>
+                    <td style="text-align:right;"><button type="button" class="btn btn-ghost" onClick="{{ s.onAdd }}">Agregar</button></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card elev-sm" style="gap:12px;">
+            <h5 style="margin:0;">Carrito</h5>
+            <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size:13px;opacity:0.6;">Aún no agregaste servicios.</div>
+            </sc-if>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ cartItems }}" as="i" hint-placeholder-count="0">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;padding-bottom:8px;border-bottom:1px solid var(--color-divider);">
+                  <span>{{ i.nombre }}</span>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-weight:600;">{{ i.precioFmt }}</span>
+                    <button type="button" class="btn btn-ghost btn-icon" onClick="{{ i.onRemove }}" aria-label="Quitar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-family:var(--font-heading);font-weight:800;font-size:20px;padding-top:4px;">
+              <span>Total</span><span>{{ cartTotalFmt }}</span>
+            </div>
+            <button type="button" class="btn btn-primary btn-block" disabled="{{ cartEmpty }}" onClick="{{ confirmCharge }}">Confirmar cobro</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isComprobantes }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <h1 style="margin:0;">Comprobantes</h1>
+          <input class="input" style="max-width:280px;" placeholder="Buscar por cliente o número" value="{{ comprobanteQuery }}" onChange="{{ onComprobanteQueryChange }}" />
+        </div>
+        <div class="card elev-sm">
+          <table class="table">
+            <thead><tr><th>N° documento</th><th>Cliente</th><th>Forma de pago</th><th style="text-align:right;">Total</th><th>Estado</th><th>Fecha</th><th>Cajero</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ comprobantesList }}" as="c" hint-placeholder-count="8">
+                <tr style="cursor:pointer;" onClick="{{ c.onOpen }}">
+                  <td>{{ c.serie }}-{{ c.num }}</td>
+                  <td>{{ c.cliente }}</td>
+                  <td><span class="tag tag-neutral">{{ c.forma }}</span></td>
+                  <td style="text-align:right;">{{ c.totalFmt }}</td>
+                  <td><span class="tag {{ c.tagClass }}">{{ c.estadoLabel }}</span></td>
+                  <td class="text-muted">{{ c.fecha }} {{ c.hora }}</td>
+                  <td>{{ c.cajero }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <sc-if value="{{ chargeDetail }}" hint-placeholder-val="{{ false }}">
+        <div class="dialog-backdrop" onClick="{{ closeCharge }}">
+          <div class="dialog elev-lg" onClick="{{ stop }}">
+            <div class="dialog-title">Comprobante {{ chargeDetail.serie }}-{{ chargeDetail.num }}</div>
+            <div class="dialog-body">
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:14px;">
+                <div><strong>Cliente:</strong> {{ chargeDetail.cliente }}</div>
+                <div><strong>Forma de pago:</strong> {{ chargeDetail.forma }}</div>
+                <div><strong>Total:</strong> {{ chargeDetail.totalFmt }}</div>
+                <div><strong>Estado:</strong> <span class="tag {{ chargeDetail.tagClass }}">{{ chargeDetail.estadoLabel }}</span></div>
+                <div><strong>Fecha:</strong> {{ chargeDetail.fecha }} {{ chargeDetail.hora }}</div>
+                <div><strong>Cajero:</strong> {{ chargeDetail.cajero }}</div>
+              </div>
+            </div>
+            <div class="dialog-actions">
+              <button type="button" class="btn btn-secondary" onClick="{{ closeCharge }}">Cerrar</button>
+              <button type="button" class="btn btn-primary">Imprimir</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    <sc-if value="{{ isAnulaciones }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h1 style="margin:0;">Solicitudes de anulación</h1>
+        <div class="card elev-sm">
+          <table class="table">
+            <thead><tr><th>Documento</th><th>Cliente</th><th style="text-align:right;">Total</th><th>Motivo</th><th>Solicitado por</th><th>Fecha</th><th>Estado</th><th></th></tr></thead>
+            <tbody>
+              <sc-for list="{{ voidList }}" as="v" hint-placeholder-count="4">
+                <tr>
+                  <td>{{ v.num }}</td>
+                  <td>{{ v.cliente }}</td>
+                  <td style="text-align:right;">{{ v.totalFmt }}</td>
+                  <td style="max-width:220px;">{{ v.motivo }}</td>
+                  <td>{{ v.solicitadoPor }}</td>
+                  <td class="text-muted">{{ v.fecha }}</td>
+                  <td><span class="tag {{ v.tagClass }}">{{ v.estadoLabel }}</span></td>
+                  <td>
+                    <sc-if value="{{ v.isPending }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;gap:6px;">
+                        <button type="button" class="btn btn-secondary" onClick="{{ v.onReject }}">Rechazar</button>
+                        <button type="button" class="btn btn-primary" onClick="{{ v.onApprove }}">Aprobar</button>
+                      </div>
+                    </sc-if>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCajeros }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h1 style="margin:0;">Cajeros y turnos</h1>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+          <sc-for list="{{ cajerosHoy }}" as="c" hint-placeholder-count="6">
+            <div class="card elev-sm">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:38px;height:38px;border-radius:50%;background:var(--color-neutral-200);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;font-family:var(--font-heading);flex-shrink:0;">{{ c.initials }}</div>
+                <div style="min-width:0;">
+                  <div style="font-weight:600;font-size:14px;">{{ c.nombre }}</div>
+                  <div style="font-size:12px;opacity:0.6;">{{ c.cod }} · {{ c.turno }}</div>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+                <span class="tag {{ c.tagClass }}">{{ c.estadoLabel }}</span>
+                <span style="font-weight:700;color:var(--color-accent-700);">{{ c.recaudadoFmt }}</span>
+              </div>
+              <div class="card-meta" style="margin-top:4px;">{{ c.boletas }} boletas emitidas</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isReportes }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <h1 style="margin:0;">Reportes</h1>
+          <button type="button" class="btn btn-secondary">Exportar</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+          <div class="card elev-sm"><div class="card-kicker">Recaudado hoy</div><div style="font-family:var(--font-heading);font-weight:800;font-size:24px;">{{ todayTotalFmt }}</div></div>
+          <div class="card elev-sm"><div class="card-kicker">Ticket promedio</div><div style="font-family:var(--font-heading);font-weight:800;font-size:24px;">{{ todayTicketFmt }}</div></div>
+          <div class="card elev-sm"><div class="card-kicker">Cajas abiertas</div><div style="font-family:var(--font-heading);font-weight:800;font-size:24px;">{{ openSessionsCount }}</div></div>
+          <div class="card elev-sm"><div class="card-kicker">Anulados hoy</div><div style="font-family:var(--font-heading);font-weight:800;font-size:24px;">{{ todayAnuladosLabel }}</div></div>
+        </div>
+
+        <div class="card elev-sm">
+          <h5 style="margin-bottom:16px;">Recaudación — últimos 7 días</h5>
+          <div style="display:flex;align-items:flex-end;gap:12px;height:160px;">
+            <sc-for list="{{ days }}" as="day" hint-placeholder-count="7">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;">
+                <div style="font-size:11px;opacity:0.65;">{{ day.totalFmt }}</div>
+                <div style="width:100%;height:110px;background:var(--color-neutral-200);display:flex;align-items:flex-end;">
+                  <div style="width:100%;background:var(--color-accent);height:{{ day.pct }}%;"></div>
+                </div>
+                <div style="font-size:11px;opacity:0.6;">{{ day.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="card elev-sm">
+            <h5 style="margin-bottom:12px;">Recaudación por forma de pago</h5>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <sc-for list="{{ formas }}" as="f" hint-placeholder-count="5">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>{{ f.grupo }}</span><span style="font-weight:600;">{{ f.totalFmt }}</span></div>
+                  <div style="height:6px;background:var(--color-neutral-200);"><div style="height:6px;background:var(--color-accent);width:{{ f.pct }}%;"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div class="card elev-sm">
+            <h5 style="margin-bottom:12px;">Top servicios — 30 días</h5>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <sc-for list="{{ servicios }}" as="s" hint-placeholder-count="5">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>{{ s.servicio }}</span><span style="font-weight:600;">{{ s.totalFmt }}</span></div>
+                  <div style="height:6px;background:var(--color-neutral-200);"><div style="height:6px;background:var(--color-accent);width:{{ s.pct }}%;"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h1 style="margin:0;">Administración</h1>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div class="seg" role="radiogroup" style="width:fit-content;">
+            <label class="seg-opt"><input type="radio" name="admintab" checked="{{ isUsuariosTab }}" onChange="{{ selectUsuariosTab }}" />Usuarios y roles</label>
+            <label class="seg-opt"><input type="radio" name="admintab" checked="{{ isLegacyTab }}" onChange="{{ selectLegacyTab }}" />Cajeros del sistema</label>
+          </div>
+          <sc-if value="{{ isUsuariosTab }}" hint-placeholder-val="{{ true }}">
+            <button type="button" class="btn btn-primary" onClick="{{ openNewUser }}">+ Nuevo usuario</button>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ isUsuariosTab }}" hint-placeholder-val="{{ true }}">
+          <div class="card elev-sm">
+            <table class="table">
+              <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th></th></tr></thead>
+              <tbody>
+                <sc-for list="{{ usuariosList }}" as="u" hint-placeholder-count="6">
+                  <tr>
+                    <td>{{ u.nombre }}</td>
+                    <td class="text-muted">{{ u.email }}</td>
+                    <td><span class="tag tag-neutral">{{ u.rol }}</span></td>
+                    <td><span class="tag {{ u.tagClass }}">{{ u.estadoLabel }}</span></td>
+                    <td style="text-align:right;"><button type="button" class="btn btn-ghost">Editar</button></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showNewUserDialog }}" hint-placeholder-val="{{ false }}">
+          <div class="dialog-backdrop" onClick="{{ closeNewUser }}">
+            <div class="dialog elev-lg" onClick="{{ stop }}">
+              <div class="dialog-title">Nuevo usuario</div>
+              <div class="dialog-body" style="display:flex;flex-direction:column;gap:12px;">
+                <div class="field"><label>Nombre completo</label><input class="input" value="{{ newUserNombre }}" onChange="{{ onNewUserNombreChange }}" /></div>
+                <div class="field"><label>Correo institucional</label><input class="input" value="{{ newUserEmail }}" onChange="{{ onNewUserEmailChange }}" /></div>
+                <div class="field">
+                  <label>Rol</label>
+                  <div class="seg" role="radiogroup">
+                    <sc-for list="{{ rolOpts }}" as="ro" hint-placeholder-count="3">
+                      <label class="seg-opt"><input type="radio" name="nuevorol" checked="{{ ro.checked }}" onChange="{{ ro.onSelect }}" />{{ ro.label }}</label>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+              <div class="dialog-actions">
+                <button type="button" class="btn btn-secondary" onClick="{{ closeNewUser }}">Cancelar</button>
+                <button type="button" class="btn btn-primary" disabled="{{ newUserInvalid }}" onClick="{{ saveNewUser }}">Crear usuario</button>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isLegacyTab }}" hint-placeholder-val="{{ false }}">
+          <div class="card elev-sm">
+            <table class="table">
+              <thead><tr><th>Código</th><th>Nombre (sistema legado)</th><th>Tipo</th><th>Estado</th></tr></thead>
+              <tbody>
+                <sc-for list="{{ legacyList }}" as="l" hint-placeholder-count="4">
+                  <tr>
+                    <td>{{ l.cod }}</td>
+                    <td>{{ l.nombreLegacy }}</td>
+                    <td class="text-muted">{{ l.tipo }}</td>
+                    <td><span class="tag {{ l.tagClass }}">{{ l.estadoLabel }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isPerfil }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:20px;max-width:560px;">
+        <h1 style="margin:0;">Configuración de perfil</h1>
+
+        <div class="card elev-sm" style="gap:16px;">
+          <h5 style="margin:0;">Datos personales</h5>
+          <div class="field"><label>Nombre completo</label><input class="input" value="{{ profileNombre }}" onChange="{{ onProfileNombreChange }}" /></div>
+          <div class="field"><label>Correo institucional</label><input class="input" value="{{ profileEmail }}" onChange="{{ onProfileEmailChange }}" /></div>
+          <button type="button" class="btn btn-primary btn-block" onClick="{{ saveProfile }}">Guardar cambios</button>
+          <sc-if value="{{ profileSaved }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:13px;color:var(--color-accent-700);">Cambios guardados.</div>
+          </sc-if>
+        </div>
+
+        <div class="card elev-sm" style="gap:16px;">
+          <h5 style="margin:0;">Seguridad</h5>
+          <div class="field"><label>Contraseña actual</label><input class="input" type="password" placeholder="••••••••" /></div>
+          <div class="field"><label>Nueva contraseña</label><input class="input" type="password" placeholder="••••••••" /></div>
+          <button type="button" class="btn btn-secondary btn-block">Actualizar contraseña</button>
+        </div>
+
+        <div class="card elev-sm" style="gap:16px;">
+          <h5 style="margin:0;">Apariencia</h5>
+          <div class="field">
+            <label>Tema</label>
+            <div class="seg" role="radiogroup">
+              <label class="seg-opt"><input type="radio" name="tema" checked="{{ isLight }}" onChange="{{ setLightTheme }}" />Claro</label>
+              <label class="seg-opt"><input type="radio" name="tema" checked="{{ isDark }}" onChange="{{ setDarkTheme }}" />Oscuro</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </main>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;accentColor&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#4c5fd5&quot;, &quot;options&quot;: [&quot;#4c5fd5&quot;, &quot;#3d7fb5&quot;, &quot;#2f8f83&quot;, &quot;#3f9142&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Marca&quot; }
+}">
+class Component extends DCLogic {
+  state = {
+    screen: 'landing',
+    theme: 'light',
+    loginEmail: '',
+    loginPassword: '',
+    userMenuOpen: false,
+    data: null,
+    voidRequests: [],
+    chargeDetail: null,
+    comprobanteQuery: '',
+    adminTab: 'usuarios',
+    mySessionOpen: true,
+    mySessionCode: 'AP00004825',
+    mySessionApertura: '08:00',
+    mySessionBoletas: 21,
+    mySessionRecaudado: 2380.00,
+    cart: [],
+    formaPago: 'PARTICULAR',
+    servicioQuery: '',
+    pacienteNombre: '',
+    chargeMsg: null,
+    showNewUserDialog: false,
+    newUserNombre: '',
+    newUserEmail: '',
+    newUserRol: 'Cajero',
+    extraUsuarios: [],
+    profileNombre: 'Miriam Solís Aguilar',
+    profileEmail: 'msolis@hospitalsanjose.gob.pe',
+    profileSaved: false,
+  };
+
+  componentDidMount() {
+    import('./mockData.js').then((m) => this.setState({ data: m, voidRequests: m.anulaciones.map((a) => ({ ...a })) }));
+  }
+
+  goTo(screen) { this.setState({ screen, chargeDetail: null, userMenuOpen: false }); }
+  toggleTheme() { this.setState((s) => ({ theme: s.theme === 'light' ? 'dark' : 'light' })); }
+  doLogin() { this.setState({ screen: 'login' }); }
+  confirmLogin() { this.setState({ screen: 'panel' }); }
+  doLogout() { this.setState({ screen: 'landing', userMenuOpen: false }); }
+  toggleSession() { this.setState((s) => ({ mySessionOpen: !s.mySessionOpen })); }
+  setVoidStatus(idx, estado) {
+    this.setState((s) => {
+      const list = s.voidRequests.slice();
+      list[idx] = { ...list[idx], estado };
+      return { voidRequests: list };
+    });
+  }
+  openCharge(row) { this.setState({ chargeDetail: row }); }
+  closeCharge() { this.setState({ chargeDetail: null }); }
+  addToCart(servicio, precio) { this.setState((s) => ({ cart: [...s.cart, { cod: servicio.cod, nombre: servicio.nombre, precio }] })); }
+  removeFromCart(idx) { this.setState((s) => ({ cart: s.cart.filter((_, i) => i !== idx) })); }
+  confirmCharge() { this.setState({ chargeMsg: 'Comprobante emitido correctamente.', cart: [], pacienteNombre: '' }); }
+
+  onTiltMove(e) {
+    const r = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5;
+    const py = (e.clientY - r.top) / r.height - 0.5;
+    e.currentTarget.style.transform = `translateY(-4px) rotateX(${py * -10}deg) rotateY(${px * 10}deg)`;
+  }
+  onTiltLeave(e) { e.currentTarget.style.transform = ''; }
+
+  saveNewUser() {
+    this.setState((s) => ({
+      extraUsuarios: [...s.extraUsuarios, { nombre: s.newUserNombre, email: s.newUserEmail, rol: s.newUserRol, estado: 'activo' }],
+      showNewUserDialog: false, newUserNombre: '', newUserEmail: '', newUserRol: 'Cajero',
+    }));
+  }
+
+  renderVals() {
+    const d = this.state.data;
+    const fmt = d ? d.fmt : (n) => 'S/ ' + Number(n || 0).toFixed(2);
+    const cajeros = d ? d.cajeros : [];
+    const comprobantes = d ? d.comprobantes : [];
+    const formasPago = d ? d.formasPago : [];
+    const last7Days = d ? d.last7Days : [];
+    const porFormaPago = d ? d.porFormaPago : [];
+    const topServicios = d ? d.topServicios : [];
+    const catalogoServicios = d ? d.catalogoServicios : [];
+    const usuarios = d ? d.usuarios : [];
+    const cajerosLegacy = d ? d.cajerosLegacy : [];
+
+    const screen = this.state.screen;
+    const navStyle = (key) => {
+      const active = screen === key;
+      return `color:${active ? 'var(--color-accent)' : 'var(--color-text)'};padding-bottom:4px;border-bottom:2px solid ${active ? 'var(--color-accent)' : 'transparent'};display:flex;align-items:center;white-space:nowrap;font-size:13px;`;
+    };
+
+    const pendingVoids = this.state.voidRequests.filter((v) => v.estado === 'pendiente');
+
+    const cq = (this.state.comprobanteQuery || '').toLowerCase();
+    const comprobantesList = comprobantes
+      .filter((c) => !cq || c.cliente.toLowerCase().includes(cq) || c.num.includes(cq))
+      .map((c) => ({
+        ...c,
+        totalFmt: fmt(c.total),
+        estadoLabel: c.estado === 'S' ? 'Vigente' : 'Anulado',
+        tagClass: c.estado === 'S' ? 'tag-accent' : 'tag-neutral',
+        onOpen: () => this.openCharge({ ...c, totalFmt: fmt(c.total), estadoLabel: c.estado === 'S' ? 'Vigente' : 'Anulado', tagClass: c.estado === 'S' ? 'tag-accent' : 'tag-neutral' }),
+      }));
+
+    const sq = (this.state.servicioQuery || '').toLowerCase();
+    const filteredServicios = catalogoServicios
+      .filter((s) => !sq || s.nombre.toLowerCase().includes(sq))
+      .map((s) => {
+        const precio = s.precios[this.state.formaPago] ?? 0;
+        return { ...s, precioFmt: fmt(precio), onAdd: () => this.addToCart(s, precio) };
+      });
+
+    const cartItems = this.state.cart.map((i, idx) => ({ ...i, precioFmt: fmt(i.precio), onRemove: () => this.removeFromCart(idx) }));
+    const cartTotal = this.state.cart.reduce((sum, i) => sum + i.precio, 0);
+
+    const maxDay = Math.max(...last7Days.map((x) => x.total), 1);
+    const days = last7Days.map((x) => ({ ...x, totalFmt: fmt(x.total), pct: Math.max(4, Math.round((x.total / maxDay) * 100)) }));
+
+    const maxForma = Math.max(...porFormaPago.map((x) => x.total), 1);
+    const formas = porFormaPago.map((x) => ({ ...x, totalFmt: fmt(x.total), pct: Math.max(4, Math.round((x.total / maxForma) * 100)) }));
+
+    const maxServicio = Math.max(...topServicios.map((x) => x.total), 1);
+    const servicios = topServicios.map((x) => ({ ...x, totalFmt: fmt(x.total), pct: Math.max(4, Math.round((x.total / maxServicio) * 100)) }));
+
+    const cajerosHoy = cajeros.map((c) => ({
+      ...c,
+      initials: c.nombre.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase(),
+      abierto: c.estado === 'P',
+      estadoLabel: c.estado === 'P' ? 'Abierto' : 'Cerrado',
+      tagClass: c.estado === 'P' ? 'tag-accent' : 'tag-neutral',
+      recaudadoFmt: fmt(c.recaudado),
+    }));
+
+    const recientes = comprobantes.filter((c) => c.estado === 'S').slice(0, 5).map((c) => ({
+      ...c,
+      totalFmt: fmt(c.total),
+      onClick: () => this.openCharge({ ...c, totalFmt: fmt(c.total), estadoLabel: 'Vigente', tagClass: 'tag-accent' }),
+    }));
+
+    const voidList = this.state.voidRequests.map((v, idx) => ({
+      ...v,
+      totalFmt: fmt(v.total),
+      isPending: v.estado === 'pendiente',
+      estadoLabel: v.estado === 'pendiente' ? 'Pendiente' : v.estado === 'aprobada' ? 'Aprobada' : 'Rechazada',
+      tagClass: v.estado === 'pendiente' ? 'tag-outline' : v.estado === 'aprobada' ? 'tag-accent' : 'tag-neutral',
+      onApprove: () => this.setVoidStatus(idx, 'aprobada'),
+      onReject: () => this.setVoidStatus(idx, 'rechazada'),
+    }));
+
+    const usuariosList = [...usuarios, ...this.state.extraUsuarios].map((u) => ({ ...u, estadoLabel: u.estado === 'activo' ? 'Activo' : 'Inactivo', tagClass: u.estado === 'activo' ? 'tag-accent' : 'tag-neutral' }));
+    const legacyList = cajerosLegacy.map((l) => ({ ...l, estadoLabel: l.estado === 'activo' ? 'Activo' : 'Inactivo', tagClass: l.estado === 'activo' ? 'tag-accent' : 'tag-neutral' }));
+
+    const today = { total: 4820.50, cobros: 34, ticket: 141.78, anulados: 1 };
+
+    const formasPagoOpts = formasPago.map((fp) => ({
+      label: fp,
+      checked: this.state.formaPago === fp,
+      onSelect: () => this.setState({ formaPago: fp }),
+    }));
+
+    const rolOpts = ['Cajero', 'Supervisor', 'Administrador'].map((r) => ({
+      label: r, checked: this.state.newUserRol === r, onSelect: () => this.setState({ newUserRol: r }),
+    }));
+
+    return {
+      accentColor: this.props.accentColor ?? '#4c5fd5',
+      isLanding: screen === 'landing', isLogin: screen === 'login',
+      isApp: screen !== 'login' && screen !== 'landing',
+      loginEmail: this.state.loginEmail, loginPassword: this.state.loginPassword,
+      onLoginEmailChange: (e) => this.setState({ loginEmail: e.target.value }),
+      onLoginPasswordChange: (e) => this.setState({ loginPassword: e.target.value }),
+      doLogin: () => this.doLogin(), confirmLogin: () => this.confirmLogin(),
+      onTiltMove: (e) => this.onTiltMove(e), onTiltLeave: (e) => this.onTiltLeave(e),
+      doLogout: () => this.doLogout(), goLanding: () => this.setState({ screen: 'landing' }),
+      theme: this.state.theme, isDark: this.state.theme === 'dark', isLight: this.state.theme === 'light',
+      toggleTheme: () => this.toggleTheme(),
+      setLightTheme: () => this.setState({ theme: 'light' }), setDarkTheme: () => this.setState({ theme: 'dark' }),
+      userMenuOpen: this.state.userMenuOpen, toggleUserMenu: () => this.setState((s) => ({ userMenuOpen: !s.userMenuOpen })),
+      goPerfil: () => this.setState({ screen: 'perfil', userMenuOpen: false }),
+      isPerfil: screen === 'perfil',
+      profileNombre: this.state.profileNombre, profileEmail: this.state.profileEmail, profileSaved: this.state.profileSaved,
+      onProfileNombreChange: (e) => this.setState({ profileNombre: e.target.value, profileSaved: false }),
+      onProfileEmailChange: (e) => this.setState({ profileEmail: e.target.value, profileSaved: false }),
+      saveProfile: () => this.setState({ profileSaved: true }),
+      showNewUserDialog: this.state.showNewUserDialog,
+      openNewUser: () => this.setState({ showNewUserDialog: true }),
+      closeNewUser: () => this.setState({ showNewUserDialog: false }),
+      newUserNombre: this.state.newUserNombre, newUserEmail: this.state.newUserEmail,
+      onNewUserNombreChange: (e) => this.setState({ newUserNombre: e.target.value }),
+      onNewUserEmailChange: (e) => this.setState({ newUserEmail: e.target.value }),
+      newUserInvalid: !this.state.newUserNombre || !this.state.newUserEmail,
+      saveNewUser: () => this.saveNewUser(),
+      rolOpts,
+      isPanel: screen === 'panel', isTurno: screen === 'turno', isCobro: screen === 'cobro',
+      isComprobantes: screen === 'comprobantes', isAnulaciones: screen === 'anulaciones',
+      isCajeros: screen === 'cajeros', isReportes: screen === 'reportes', isAdmin: screen === 'admin',
+      goPanel: () => this.goTo('panel'), goTurno: () => this.goTo('turno'), goCobro: () => this.goTo('cobro'),
+      goComprobantes: () => this.goTo('comprobantes'), goAnulaciones: () => this.goTo('anulaciones'),
+      goCajeros: () => this.goTo('cajeros'), goReportes: () => this.goTo('reportes'), goAdmin: () => this.goTo('admin'),
+      sPanel: navStyle('panel'), sTurno: navStyle('turno'), sCobro: navStyle('cobro'), sComprobantes: navStyle('comprobantes'),
+      sAnulaciones: navStyle('anulaciones'), sCajeros: navStyle('cajeros'), sReportes: navStyle('reportes'), sAdmin: navStyle('admin'),
+      hasPendingVoids: pendingVoids.length > 0,
+      pendingVoidsCount: pendingVoids.length,
+      pendingVoidsPreview: pendingVoids.slice(0, 2).map((v) => v.num + ' (' + fmt(v.total) + ')').join(', '),
+      todayTotalFmt: fmt(today.total),
+      todayCobrosLabel: today.cobros + ' cobros emitidos',
+      todayTicketFmt: fmt(today.ticket),
+      todayAnuladosLabel: String(today.anulados),
+      openSessionsCount: cajeros.filter((c) => c.estado === 'P').length,
+      days, formas, servicios,
+      cajerosHoy: cajerosHoy.map((c) => ({ ...c, tagClass: c.estado === 'P' ? 'tag-accent' : 'tag-neutral' })),
+      recientes,
+      mySessionCode: this.state.mySessionCode,
+      mySessionApertura: this.state.mySessionApertura,
+      mySessionBoletas: this.state.mySessionBoletas,
+      mySessionRecaudadoFmt: fmt(this.state.mySessionRecaudado),
+      mySessionStatusLabel: this.state.mySessionOpen ? 'Abierto' : 'Cerrado',
+      mySessionTagClass: this.state.mySessionOpen ? 'tag-accent' : 'tag-neutral',
+      mySessionButtonClass: this.state.mySessionOpen ? 'btn btn-secondary' : 'btn btn-primary',
+      mySessionButtonLabel: this.state.mySessionOpen ? 'Cerrar turno' : 'Abrir turno',
+      toggleSession: () => this.toggleSession(),
+      chargeMsg: this.state.chargeMsg,
+      pacienteNombre: this.state.pacienteNombre,
+      onPacienteChange: (e) => this.setState({ pacienteNombre: e.target.value }),
+      formasPagoOpts,
+      servicioQuery: this.state.servicioQuery,
+      onServicioQueryChange: (e) => this.setState({ servicioQuery: e.target.value }),
+      filteredServicios,
+      cartItems, cartEmpty: this.state.cart.length === 0, cartTotalFmt: fmt(cartTotal),
+      confirmCharge: () => this.confirmCharge(),
+      comprobanteQuery: this.state.comprobanteQuery,
+      onComprobanteQueryChange: (e) => this.setState({ comprobanteQuery: e.target.value }),
+      comprobantesList,
+      chargeDetail: this.state.chargeDetail,
+      closeCharge: () => this.closeCharge(),
+      stop: (e) => e.stopPropagation(),
+      voidList,
+      isUsuariosTab: this.state.adminTab === 'usuarios',
+      isLegacyTab: this.state.adminTab === 'legacy',
+      selectUsuariosTab: () => this.setState({ adminTab: 'usuarios' }),
+      selectLegacyTab: () => this.setState({ adminTab: 'legacy' }),
+      usuariosList, legacyList,
+    };
+  }
+}
+</script>
+</body>
+</html>

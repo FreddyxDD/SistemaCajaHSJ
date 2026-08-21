@@ -121,7 +121,7 @@ new #[Title('Cajeros y turnos')] class extends Component {
     }
 }; ?>
 
-<section class="w-full max-w-7xl mx-auto space-y-6">
+<section class="w-full space-y-6">
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
             <flux:heading size="xl">Cajeros y turnos</flux:heading>
@@ -141,7 +141,7 @@ new #[Title('Cajeros y turnos')] class extends Component {
 
     {{-- Resumen del periodo --}}
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <div class="rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
             <div class="flex items-center gap-2">
                 <flux:icon.users class="size-4 text-zinc-400" />
                 <flux:text class="text-sm text-zinc-500">Cajeros con actividad</flux:text>
@@ -150,16 +150,16 @@ new #[Title('Cajeros y turnos')] class extends Component {
             <flux:text class="text-xs text-zinc-500">{{ $this->totals['turnos'] }} turnos en el periodo</flux:text>
         </div>
 
-        <div class="rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
             <div class="flex items-center gap-2">
-                <flux:icon.banknotes class="size-4 text-emerald-500" />
+                <flux:icon.banknotes class="size-4 text-indigo-500" />
                 <flux:text class="text-sm text-zinc-500">Recaudado</flux:text>
             </div>
-            <div class="mt-1 text-3xl font-semibold text-emerald-600 dark:text-emerald-400">S/ {{ number_format($this->totals['recaudado'], 2) }}</div>
+            <div class="mt-1 text-3xl font-semibold text-indigo-600 dark:text-indigo-400">S/ {{ number_format($this->totals['recaudado'], 2) }}</div>
             <flux:text class="text-xs text-zinc-500">{{ $this->totals['boletas'] }} comprobantes</flux:text>
         </div>
 
-        <div class="rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
             <div class="flex items-center gap-2">
                 <flux:icon.clock class="size-4 text-amber-500" />
                 <flux:text class="text-sm text-zinc-500">Turnos abiertos</flux:text>
@@ -168,7 +168,7 @@ new #[Title('Cajeros y turnos')] class extends Component {
             <flux:text class="text-xs text-zinc-500">Sin cerrar en el periodo</flux:text>
         </div>
 
-        <div class="rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
             <div class="flex items-center gap-2">
                 <flux:icon.x-circle class="size-4 text-red-500" />
                 <flux:text class="text-sm text-zinc-500">Anuladas</flux:text>
@@ -181,7 +181,7 @@ new #[Title('Cajeros y turnos')] class extends Component {
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-5">
         {{-- Cajeros --}}
         <div class="lg:col-span-2">
-            <div class="overflow-hidden rounded-xl border border-zinc-200 dark:border-white/10">
+            <div class="overflow-hidden acrilico rounded-xl border border-zinc-200 dark:border-white/10">
                 <div class="border-b border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-white/10 dark:bg-white/5">
                     <flux:subheading>Cajeros</flux:subheading>
                 </div>
@@ -192,13 +192,13 @@ new #[Title('Cajeros y turnos')] class extends Component {
                         <button
                             type="button"
                             wire:click="selectCashier('{{ $c->cod_usu }}')"
-                            class="flex w-full items-center gap-3 px-4 py-3 text-left {{ $active ? 'bg-emerald-50 dark:bg-emerald-400/10' : 'hover:bg-zinc-50 dark:hover:bg-white/5' }}"
+                            class="flex w-full items-center gap-3 px-4 py-3 text-left {{ $active ? 'bg-indigo-50 dark:bg-indigo-400/10' : 'hover:bg-zinc-50 dark:hover:bg-white/5' }}"
                         >
                             <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
                                 {{ \Illuminate\Support\Str::of($c->nombre ?? $c->cod_usu)->explode(' ')->take(2)->map(fn ($w) => mb_substr($w, 0, 1))->implode('') }}
                             </div>
                             <div class="min-w-0 flex-1">
-                                <div class="truncate text-sm font-medium {{ $active ? 'text-emerald-700 dark:text-emerald-400' : '' }}">
+                                <div class="truncate text-sm font-medium {{ $active ? 'text-indigo-700 dark:text-indigo-400' : '' }}">
                                     {{ $c->nombre ?? 'Sin nombre' }}
                                 </div>
                                 <div class="flex items-center gap-2 text-xs text-zinc-500">
@@ -226,7 +226,7 @@ new #[Title('Cajeros y turnos')] class extends Component {
 
         {{-- Turnos del cajero seleccionado --}}
         <div class="lg:col-span-3">
-            <div class="overflow-hidden rounded-xl border border-zinc-200 dark:border-white/10">
+            <div class="overflow-hidden acrilico rounded-xl border border-zinc-200 dark:border-white/10">
                 <div class="border-b border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-white/10 dark:bg-white/5">
                     <flux:subheading>
                         {{ $this->cashier ? 'Turnos de '.$this->selectedCashierName : 'Turnos' }}

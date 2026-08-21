@@ -117,7 +117,7 @@ new #[Title('Usuarios')] class extends Component {
     }
 }; ?>
 
-<section class="w-full max-w-5xl mx-auto space-y-6">
+<section class="w-full space-y-6">
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
             <flux:heading size="xl">Usuarios</flux:heading>
@@ -127,9 +127,9 @@ new #[Title('Usuarios')] class extends Component {
     </div>
 
     @if (session('ok'))
-        <div class="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/30 dark:bg-emerald-400/10">
-            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <flux:text class="text-emerald-800 dark:text-emerald-300">{{ session('ok') }}</flux:text>
+        <div class="flex items-start gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-500/30 dark:bg-indigo-400/10">
+            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
+            <flux:text class="text-indigo-800 dark:text-indigo-300">{{ session('ok') }}</flux:text>
         </div>
     @endif
 
@@ -148,7 +148,7 @@ new #[Title('Usuarios')] class extends Component {
             @php
                 $appRoles = $user->accessAccount?->roles->where('application_id', $this->application->id) ?? collect();
             @endphp
-            <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="acrilico rounded-xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div class="flex min-w-0 items-start gap-3">
                         <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
@@ -188,12 +188,12 @@ new #[Title('Usuarios')] class extends Component {
 
                         <div class="grid gap-2 sm:grid-cols-2">
                             @foreach ($this->roles as $role)
-                                <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-zinc-200 bg-white p-3 hover:border-emerald-400 dark:border-white/10 dark:bg-white/5">
+                                <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-zinc-200 bg-white p-3 hover:border-indigo-400 dark:border-white/10 dark:bg-white/5">
                                     <input
                                         type="checkbox"
                                         value="{{ $role->id }}"
                                         wire:model="selectedRoles"
-                                        class="mt-0.5 size-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500"
+                                        class="mt-0.5 size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
                                     >
                                     <span class="min-w-0">
                                         <span class="block text-sm font-medium">{{ $role->name }}</span>

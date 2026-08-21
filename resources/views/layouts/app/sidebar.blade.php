@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
     </head>
@@ -75,13 +75,14 @@
             <flux:spacer />
 
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
+                {{-- Tema claro/oscuro. `$flux.dark` es el estado que ya administra y
+                     persiste Flux (@fluxAppearance); no duplicar esa logica. --}}
+                <div x-data>
+                    <flux:sidebar.item icon="sun" href="#" x-on:click.prevent="$flux.dark = ! $flux.dark">
+                        <span x-show="$flux.dark" x-cloak>{{ __('Modo claro') }}</span>
+                        <span x-show="! $flux.dark">{{ __('Modo oscuro') }}</span>
+                    </flux:sidebar.item>
+                </div>
             </flux:sidebar.nav>
 
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
