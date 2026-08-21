@@ -123,6 +123,80 @@ new #[Title('Profile settings')] class extends Component {
             </div>
         </form>
 
+        @if (auth()->user()?->canDo('users.view'))
+            @php
+                $cajaEnvironments = app(\App\Support\Caja\CajaDatabaseEnvironment::class);
+                $cajaEnvironment = $cajaEnvironments->selected(request());
+            @endphp
+
+            @if ($cajaEnvironments->enabled())
+                <flux:separator />
+
+                <section class="my-6" data-test="profile-caja-environment-switcher">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <flux:heading>Base de datos de Caja</flux:heading>
+                            <flux:subheading>Elige la base que utilizará tu sesión actual.</flux:subheading>
+                        </div>
+
+                        <flux:badge :color="$cajaEnvironment === \App\Support\Caja\CajaDatabaseEnvironment::INSTITUTIONAL ? 'red' : 'amber'">
+                            Activa: {{ $cajaEnvironments->label($cajaEnvironment) }}
+                        </flux:badge>
+                    </div>
+
+                    @if (session('caja_environment_status'))
+                        <div class="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">
+                            {{ session('caja_environment_status') }}
+                        </div>
+                    @endif
+
+                    @error('caja_environment')
+                        <div class="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-400/10 dark:text-red-300">
+                            {{ $message }}
+                        </div>
+                    @enderror
+
+                    <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                        <form method="POST" action="{{ route('caja-environment.update') }}">
+                            @csrf
+                            <input type="hidden" name="environment" value="development">
+                            <flux:button
+                                type="submit"
+                                variant="{{ $cajaEnvironment === \App\Support\Caja\CajaDatabaseEnvironment::DEVELOPMENT ? 'primary' : 'filled' }}"
+                                icon="beaker"
+                                class="w-full"
+                                :disabled="$cajaEnvironment === \App\Support\Caja\CajaDatabaseEnvironment::DEVELOPMENT"
+                            >
+                                Usar desarrollo
+                            </flux:button>
+                        </form>
+
+                        <form
+                            method="POST"
+                            action="{{ route('caja-environment.update') }}"
+                            onsubmit="return confirm('Cambiarás a la base institucional real. Los cobros y anulaciones afectarán datos operativos. ¿Deseas continuar?')"
+                        >
+                            @csrf
+                            <input type="hidden" name="environment" value="institutional">
+                            <flux:button
+                                type="submit"
+                                variant="{{ $cajaEnvironment === \App\Support\Caja\CajaDatabaseEnvironment::INSTITUTIONAL ? 'danger' : 'filled' }}"
+                                icon="building-office"
+                                class="w-full"
+                                :disabled="$cajaEnvironment === \App\Support\Caja\CajaDatabaseEnvironment::INSTITUTIONAL"
+                            >
+                                Usar institucional
+                            </flux:button>
+                        </form>
+                    </div>
+
+                    <flux:text class="mt-3 text-xs">
+                        El cambio es por sesión, valida la conexión y queda registrado en auditoría.
+                    </flux:text>
+                </section>
+            @endif
+        @endif
+
         {{-- @chisel-email-verification --}}
         @if ($this->showDeleteUser)
         {{-- @end-chisel-email-verification --}}

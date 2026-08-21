@@ -145,6 +145,36 @@ return [
             'trust_server_certificate' => env('CAJA_DB_TRUST_SERVER_CERTIFICATE', true),
         ],
 
+        // Copia de desarrollo del esquema legado. El middleware coloca esta
+        // configuracion en el alias `caja` cuando la sesion usa DEV.
+        'caja_development' => [
+            'driver' => 'sqlsrv',
+            'host' => env('CAJA_DEV_DB_HOST', env('CAJA_DB_HOST', env('DB_HOST', 'localhost'))),
+            'port' => env('CAJA_DEV_DB_PORT', env('CAJA_DB_PORT')) ?: null,
+            'database' => env('CAJA_DEV_DB_DATABASE', env('CAJA_DB_DATABASE', 'SISGESH_BD')),
+            'username' => env('CAJA_DEV_DB_USERNAME', env('CAJA_DB_USERNAME')) ?: null,
+            'password' => env('CAJA_DEV_DB_PASSWORD', env('CAJA_DB_PASSWORD')) ?: null,
+            'charset' => env('CAJA_DEV_DB_CHARSET', env('CAJA_DB_CHARSET', 'utf8')),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'trust_server_certificate' => env('CAJA_DEV_DB_TRUST_SERVER_CERTIFICATE', env('CAJA_DB_TRUST_SERVER_CERTIFICATE', true)),
+        ],
+
+        // Base real en la red institucional. No hereda host ni credenciales de
+        // desarrollo: el cambio se rechaza si alguna variable obligatoria falta.
+        'caja_institutional' => [
+            'driver' => 'sqlsrv',
+            'host' => env('CAJA_INSTITUTIONAL_DB_HOST'),
+            'port' => env('CAJA_INSTITUTIONAL_DB_PORT') ?: null,
+            'database' => env('CAJA_INSTITUTIONAL_DB_DATABASE', 'SISGESH_BD'),
+            'username' => env('CAJA_INSTITUTIONAL_DB_USERNAME') ?: null,
+            'password' => env('CAJA_INSTITUTIONAL_DB_PASSWORD') ?: null,
+            'charset' => env('CAJA_INSTITUTIONAL_DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'trust_server_certificate' => env('CAJA_INSTITUTIONAL_DB_TRUST_SERVER_CERTIFICATE', true),
+        ],
+
         // Base clinica SIGH, solo lectura, usada para buscar pacientes por historia clinica.
         'sigh' => [
             'driver' => 'sqlsrv',

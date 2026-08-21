@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\CajaEnvironmentController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -16,6 +17,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'password.confirm',
         ])
         ->name('security.edit');
+
+    Route::post('settings/caja-environment', CajaEnvironmentController::class)
+        ->middleware('permission:users.view')
+        ->name('caja-environment.update');
 });
 
 Route::get('.well-known/passkey-endpoints', function () {

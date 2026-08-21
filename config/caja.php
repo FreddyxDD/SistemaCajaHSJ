@@ -2,6 +2,13 @@
 
 return [
 
+    /* El selector solo se muestra cuando ambos entornos fueron configurados de
+       manera consciente. */
+    'environment_switch_enabled' => env('CAJA_DB_SWITCH_ENABLED', false),
+
+    /* Una sesión nueva siempre inicia en el entorno seguro. */
+    'default_environment' => env('CAJA_DB_DEFAULT', 'development'),
+
     /*
     |--------------------------------------------------------------------------
     | Distrito por defecto

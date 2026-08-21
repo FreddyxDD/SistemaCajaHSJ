@@ -6,6 +6,8 @@
     <body class="min-h-screen bg-white dark:bg-[#14171a] dark:text-[#eef1f3]">
         @php
             $u = auth()->user();
+            $cajaEnvironments = app(\App\Support\Caja\CajaDatabaseEnvironment::class);
+            $cajaEnvironment = $cajaEnvironments->selected(request());
             $pendingVoids = ($u?->canDo('caja.void.approve'))
                 ? \App\Models\VoidRequest::query()->pending()->count()
                 : 0;
@@ -110,6 +112,62 @@
 
             <flux:spacer />
 
+            @if ($cajaEnvironments->enabled())
+                @if ($u?->canDo('users.view'))
+                    <flux:dropdown position="bottom" align="end">
+                        <flux:button
+                            variant="ghost"
+                            size="sm"
+                            icon="circle-stack"
+                            class="me-1 {{ $cajaEnvironment === \App\Support\Caja\CajaDatabaseEnvironment::INSTITUTIONAL ? 'text-red-600 dark:text-red-300' : 'text-amber-600 dark:text-amber-300' }}"
+                            title="Base de Caja activa: {{ $cajaEnvironments->label($cajaEnvironment) }}"
+                        >
+                            {{ $cajaEnvironments->shortLabel($cajaEnvironment) }}
+                        </flux:button>
+
+                        <flux:menu>
+                            <flux:menu.heading>Base de datos de Caja</flux:menu.heading>
+
+                            <form method="POST" action="{{ route('caja-environment.update') }}">
+                                @csrf
+                                <input type="hidden" name="environment" value="development">
+                                <flux:menu.item
+                                    as="button"
+                                    type="submit"
+                                    icon="beaker"
+                                    class="w-full cursor-pointer"
+                                    :disabled="$cajaEnvironment === \App\Support\Caja\CajaDatabaseEnvironment::DEVELOPMENT"
+                                >
+                                    Desarrollo
+                                </flux:menu.item>
+                            </form>
+
+                            <form
+                                method="POST"
+                                action="{{ route('caja-environment.update') }}"
+                                onsubmit="return confirm('Cambiarás a la base institucional real. Los cobros y anulaciones afectarán datos operativos. ¿Deseas continuar?')"
+                            >
+                                @csrf
+                                <input type="hidden" name="environment" value="institutional">
+                                <flux:menu.item
+                                    as="button"
+                                    type="submit"
+                                    icon="building-office"
+                                    class="w-full cursor-pointer text-red-600 dark:text-red-300"
+                                    :disabled="$cajaEnvironment === \App\Support\Caja\CajaDatabaseEnvironment::INSTITUTIONAL"
+                                >
+                                    Institucional
+                                </flux:menu.item>
+                            </form>
+                        </flux:menu>
+                    </flux:dropdown>
+                @else
+                    <flux:badge :color="$cajaEnvironment === \App\Support\Caja\CajaDatabaseEnvironment::INSTITUTIONAL ? 'red' : 'amber'" size="sm" class="me-1">
+                        {{ $cajaEnvironments->shortLabel($cajaEnvironment) }}
+                    </flux:badge>
+                @endif
+            @endif
+
             {{-- Tema claro/oscuro. `$flux.dark` es el estado que ya administra y
                  persiste Flux (@fluxAppearance); no duplicar esa logica. --}}
             <div x-data class="me-2">
@@ -212,6 +270,12 @@
             <flux:spacer />
 
             <flux:sidebar.nav>
+                @if ($cajaEnvironments->enabled())
+                    <flux:sidebar.item icon="circle-stack" :href="route('profile.edit')" wire:navigate>
+                        Base activa: {{ $cajaEnvironments->label($cajaEnvironment) }}
+                    </flux:sidebar.item>
+                @endif
+
                 <div x-data>
                     <flux:sidebar.item icon="sun" href="#" x-on:click.prevent="$flux.dark = ! $flux.dark">
                         <span x-show="$flux.dark" x-cloak>{{ __('Modo claro') }}</span>

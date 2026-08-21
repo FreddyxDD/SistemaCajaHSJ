@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ApplyCajaDatabaseEnvironment;
 use App\Http\Middleware\EnsureUserHasPermission;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -13,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->appendToGroup('web', ApplyCajaDatabaseEnvironment::class);
+
         $middleware->alias([
             'permission' => EnsureUserHasPermission::class,
         ]);
