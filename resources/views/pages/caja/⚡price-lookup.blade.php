@@ -247,7 +247,7 @@ new #[Title('Consulta de precios')] class extends Component {
                         <button
                             type="button"
                             wire:click="toggle('{{ $price->cod_precio }}')"
-                            class="flex w-full items-center justify-between gap-4 px-3 py-2.5 text-left {{ $elegido ? 'bg-accent/10' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}"
+                            class="flex w-full items-center justify-between gap-4 px-3 py-2.5 text-left max-sm:min-h-11 {{ $elegido ? 'bg-accent/10' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}"
                         >
                             <span class="min-w-0 flex-1">
                                 <span class="text-sm {{ $elegido ? 'font-medium text-accent' : '' }}">

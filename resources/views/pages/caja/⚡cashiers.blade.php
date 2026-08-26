@@ -209,7 +209,7 @@ new #[Title('Cajeros y turnos')] class extends Component {
     @endif
 
     {{-- Resumen del periodo --}}
-    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="acrilico p-5">
             <div class="flex items-center gap-2">
                 <flux:icon.users class="size-4 text-zinc-400" />

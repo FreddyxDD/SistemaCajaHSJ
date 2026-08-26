@@ -33,20 +33,22 @@ new #[Title('Cobros')] class extends Component {
 }; ?>
 
 <section class="w-full space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-3">
         <flux:heading size="xl">Cobros</flux:heading>
         <flux:button href="{{ route('caja.charges.create') }}" variant="primary">Nuevo cobro</flux:button>
     </div>
 
     <flux:input wire:model.live.debounce.400ms="q" placeholder="Buscar por documento o cliente..." />
 
+    {{-- En telefono se ocultan cliente y fecha; quedan documento, total y estado. --}}
+    <div class="overflow-x-auto">
     <flux:table :paginate="$this->documents">
         <flux:table.columns>
             <flux:table.column>Documento</flux:table.column>
-            <flux:table.column>Cliente</flux:table.column>
+            <flux:table.column class="max-sm:hidden">Cliente</flux:table.column>
             <flux:table.column>Total</flux:table.column>
             <flux:table.column>Estado</flux:table.column>
-            <flux:table.column>Fecha</flux:table.column>
+            <flux:table.column class="max-sm:hidden">Fecha</flux:table.column>
         </flux:table.columns>
         <flux:table.rows>
             @foreach ($this->documents as $document)
@@ -54,16 +56,17 @@ new #[Title('Cobros')] class extends Component {
                     <flux:table.cell>
                         <flux:link href="{{ route('caja.charges.show', $document->id_documento) }}">{{ $document->num_documento }}</flux:link>
                     </flux:table.cell>
-                    <flux:table.cell>{{ $document->cliente }}</flux:table.cell>
+                    <flux:table.cell class="max-sm:hidden">{{ $document->cliente }}</flux:table.cell>
                     <flux:table.cell>S/ {{ number_format($document->total_doc, 2) }}</flux:table.cell>
                     <flux:table.cell>
                         <flux:badge :color="$document->isVoided() ? 'red' : 'green'">
                             {{ $document->isVoided() ? 'Anulado' : 'Vigente' }}
                         </flux:badge>
                     </flux:table.cell>
-                    <flux:table.cell>{{ $document->fecha_actu }} {{ $document->hora_actu }}</flux:table.cell>
+                    <flux:table.cell class="max-sm:hidden">{{ $document->fecha_actu }} {{ $document->hora_actu }}</flux:table.cell>
                 </flux:table.row>
             @endforeach
         </flux:table.rows>
     </flux:table>
+    </div>
 </section>

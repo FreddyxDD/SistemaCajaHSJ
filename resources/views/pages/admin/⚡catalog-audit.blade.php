@@ -125,7 +125,7 @@ new #[Title('Auditoría del catálogo')] class extends Component {
         </flux:button>
     </div>
 
-    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @php
             $tarjetas = [
                 ['Cambios registrados', $this->totals['eventos'], 'En total'],

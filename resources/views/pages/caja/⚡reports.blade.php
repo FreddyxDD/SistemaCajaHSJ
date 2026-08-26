@@ -160,6 +160,8 @@ new #[Title('Reportes de caja')] class extends Component {
                 @php
                     $groupTotal = $this->byPaymentGroup->sum('total') ?: 1;
                 @endphp
+                {{-- El margen negativo deja que el scroll llegue al borde de la tarjeta. --}}
+                <div class="-mx-5 overflow-x-auto px-5">
                 <flux:table>
                     <flux:table.columns>
                         <flux:table.column>Grupo</flux:table.column>
@@ -178,6 +180,7 @@ new #[Title('Reportes de caja')] class extends Component {
                         @endforeach
                     </flux:table.rows>
                 </flux:table>
+                </div>
             @endif
         </div>
 

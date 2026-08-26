@@ -332,12 +332,17 @@ new #[Title('Turno de caja')] class extends Component {
     {{-- Historial --}}
     <div>
         <flux:subheading class="mb-2">Turnos recientes</flux:subheading>
+
+        {{-- En telefono se ocultan las columnas de apoyo (apertura, cierre, duracion) y
+             queda lo que identifica y decide: codigo, recaudado, estado y el reporte.
+             El scroll horizontal vive dentro de la tabla, nunca en la pagina. --}}
+        <div class="overflow-x-auto">
         <flux:table>
             <flux:table.columns>
                 <flux:table.column>Código</flux:table.column>
-                <flux:table.column>Apertura</flux:table.column>
-                <flux:table.column>Cierre</flux:table.column>
-                <flux:table.column>Duración</flux:table.column>
+                <flux:table.column class="max-sm:hidden">Apertura</flux:table.column>
+                <flux:table.column class="max-sm:hidden">Cierre</flux:table.column>
+                <flux:table.column class="max-sm:hidden">Duración</flux:table.column>
                 <flux:table.column>Recaudado</flux:table.column>
                 <flux:table.column>Estado</flux:table.column>
                 <flux:table.column>Reporte</flux:table.column>
@@ -347,15 +352,15 @@ new #[Title('Turno de caja')] class extends Component {
                     @php $totales = $this->totalsBySession[$session->cod_aper_cierre_caja] ?? null; @endphp
                     <flux:table.row>
                         <flux:table.cell>{{ $session->cod_aper_cierre_caja }}</flux:table.cell>
-                        <flux:table.cell>{{ $session->fecha_apertura }} {{ $session->hora_apertura }}</flux:table.cell>
-                        <flux:table.cell>
+                        <flux:table.cell class="max-sm:hidden">{{ $session->fecha_apertura }} {{ $session->hora_apertura }}</flux:table.cell>
+                        <flux:table.cell class="max-sm:hidden">
                             @if ($session->isOpen())
                                 &mdash;
                             @else
                                 {{ $session->fecha_cierre }} {{ $session->hora_cierre }}
                             @endif
                         </flux:table.cell>
-                        <flux:table.cell>
+                        <flux:table.cell class="max-sm:hidden">
                             <span class="{{ $session->exceedsMaxDuration() ? 'font-medium text-amber-600 dark:text-amber-400' : '' }}">
                                 {{ $session->durationLabel() }}
                             </span>
@@ -381,5 +386,6 @@ new #[Title('Turno de caja')] class extends Component {
                 @endforeach
             </flux:table.rows>
         </flux:table>
+        </div>
     </div>
 </section>

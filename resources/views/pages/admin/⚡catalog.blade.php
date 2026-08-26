@@ -698,7 +698,7 @@ new #[Title('Catálogo de servicios')] class extends Component {
                                         @endforeach
                                     </flux:select>
 
-                                    <div class="grid grid-cols-2 gap-3">
+                                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <flux:select wire:model="form.vis_admi" label="Visible en admisión" :disabled="! $this->canManage">
                                             <flux:select.option value="S">Sí</flux:select.option>
                                             <flux:select.option value="N">No</flux:select.option>

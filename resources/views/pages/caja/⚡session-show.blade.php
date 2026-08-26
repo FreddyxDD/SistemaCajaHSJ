@@ -175,7 +175,7 @@ new #[Title('Detalle de turno')] class extends Component {
         </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Recaudado en el turno</flux:text>
             <div class="mt-1 text-2xl font-semibold text-accent">S/ {{ number_format($this->totals['recaudado'], 2) }}</div>

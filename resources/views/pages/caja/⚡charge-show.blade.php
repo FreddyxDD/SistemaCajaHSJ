@@ -211,8 +211,10 @@ new #[Title('Detalle de cobro')] class extends Component {
             @endif
         </div>
 
-        <div class="overflow-hidden rounded-lg border dark:border-zinc-700">
-            <table class="w-full table-fixed text-sm">
+        {{-- Ancho minimo + scroll propio: en telefono la tabla se desplaza dentro de
+             su caja en vez de aplastar la descripcion del servicio. --}}
+        <div class="overflow-x-auto rounded-lg border dark:border-zinc-700">
+            <table class="w-full min-w-[26rem] table-fixed text-sm">
                 <colgroup>
                     <col class="w-auto">
                     <col class="w-16">

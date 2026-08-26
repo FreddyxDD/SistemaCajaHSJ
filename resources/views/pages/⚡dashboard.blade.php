@@ -178,7 +178,7 @@ new #[Title('Panel')] class extends Component {
 }; ?>
 
 <div class="flex h-full w-full flex-1 flex-col gap-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
             <flux:heading size="xl">Panel de recaudación</flux:heading>
             <flux:text class="text-zinc-500">Hoy, {{ now()->translatedFormat('l d \d\e F \d\e Y') }}</flux:text>
@@ -243,9 +243,9 @@ new #[Title('Panel')] class extends Component {
         {{-- Tendencia 7 dias --}}
         <div class="acrilico p-5 lg:col-span-2">
             <flux:subheading class="mb-4">Recaudación — últimos 7 días</flux:subheading>
-            <div class="flex h-40 items-end gap-3">
+            <div class="flex h-40 items-end gap-3 overflow-x-auto">
                 @foreach ($this->last7Days as $day)
-                    <div class="flex flex-1 flex-col items-center gap-2">
+                    <div class="flex min-w-10 flex-1 flex-col items-center gap-2">
                         <flux:text class="text-xs text-zinc-500">S/ {{ number_format($day['total'], 0) }}</flux:text>
                         <div class="flex h-28 w-full items-end rounded-md bg-zinc-100 dark:bg-white/10">
                             <div class="bar-grow w-full rounded-md bg-accent" style="height: {{ $day['pct'] }}%"></div>

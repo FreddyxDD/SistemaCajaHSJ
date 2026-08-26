@@ -721,7 +721,7 @@ new #[Title('Nuevo cobro')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    <div class="mb-4 flex items-center justify-between">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <flux:heading size="xl">Nuevo cobro</flux:heading>
         <flux:badge :color="$this->currentSession?->exceedsMaxDuration() ? 'amber' : 'green'">
             Turno {{ $this->currentSession?->cod_aper_cierre_caja }}
@@ -1044,7 +1044,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                             <flux:text class="text-xs text-zinc-500">{{ $sheet['meta']['note'] }}</flux:text>
                         @endif
 
-                        <div class="max-h-[36rem] space-y-5 overflow-y-auto rounded-lg border p-3 dark:border-zinc-700">
+                        <div class="max-h-[60vh] space-y-5 overflow-y-auto rounded-lg border p-3 lg:max-h-[36rem] dark:border-zinc-700">
                             @forelse ($sheet['sections'] as $sectionName => $rows)
                                 <div>
                                     <div class="mb-2 border-b pb-1 text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:border-zinc-700">
@@ -1151,7 +1151,7 @@ new #[Title('Nuevo cobro')] class extends Component {
 
                     <flux:text class="text-xs text-zinc-500">Ordenado por lo más solicitado según el historial de ventas. Click para agregar, click de nuevo para quitar.</flux:text>
 
-                    <div class="max-h-96 divide-y overflow-y-auto rounded-lg border dark:divide-zinc-700 dark:border-zinc-700">
+                    <div class="max-h-[60vh] divide-y overflow-y-auto rounded-lg border lg:max-h-96 dark:divide-zinc-700 dark:border-zinc-700">
                         @forelse ($this->itemResults as $price)
                             @php
                                 $isSelected = in_array($price->cod_precio, $this->selectedPrices, true);
@@ -1160,7 +1160,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                             <button
                                 type="button"
                                 wire:click="toggleItem('{{ $price->cod_precio }}')"
-                                class="flex w-full items-center justify-between gap-4 px-3 py-2.5 text-left {{ $isSelected ? 'bg-accent/10' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}"
+                                class="flex w-full items-center justify-between gap-4 px-3 py-2.5 text-left max-sm:min-h-11 {{ $isSelected ? 'bg-accent/10' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}"
                             >
                                 <span class="min-w-0 flex-1">
                                     <span class="text-sm {{ $isSelected ? 'font-medium text-accent' : '' }}">
@@ -1207,15 +1207,15 @@ new #[Title('Nuevo cobro')] class extends Component {
                 @if (empty($cart))
                     <flux:text class="text-sm text-zinc-500">Aún no agregas servicios. Elige uno del catálogo a la izquierda.</flux:text>
                 @else
-                    <div class="max-h-80 space-y-3 overflow-y-auto">
+                    <div class="max-h-[50vh] space-y-3 overflow-y-auto lg:max-h-80">
                         @foreach ($cart as $index => $line)
                             <div class="flex items-start justify-between gap-2 border-b pb-3 last:border-0 dark:border-zinc-700">
                                 <div class="min-w-0 flex-1">
                                     <flux:text class="line-clamp-2 text-sm font-medium">{{ $line['descripcion'] }}</flux:text>
                                     <div class="mt-1 flex items-center gap-2">
-                                        <button type="button" wire:click="updateQuantity({{ $index }}, {{ $line['cantidad'] - 1 }})" class="flex size-6 items-center justify-center rounded-full border text-sm dark:border-zinc-600">−</button>
+                                        <button type="button" wire:click="updateQuantity({{ $index }}, {{ $line['cantidad'] - 1 }})" class="flex size-6 items-center justify-center rounded-full border text-sm max-sm:size-11 dark:border-zinc-600">−</button>
                                         <span class="w-6 text-center text-sm">{{ $line['cantidad'] }}</span>
-                                        <button type="button" wire:click="updateQuantity({{ $index }}, {{ $line['cantidad'] + 1 }})" class="flex size-6 items-center justify-center rounded-full border text-sm dark:border-zinc-600">+</button>
+                                        <button type="button" wire:click="updateQuantity({{ $index }}, {{ $line['cantidad'] + 1 }})" class="flex size-6 items-center justify-center rounded-full border text-sm max-sm:size-11 dark:border-zinc-600">+</button>
                                         <span class="text-xs text-zinc-500">× S/ {{ number_format($line['precio'], 2) }}</span>
                                     </div>
                                 </div>
@@ -1227,15 +1227,22 @@ new #[Title('Nuevo cobro')] class extends Component {
                         @endforeach
                     </div>
 
-                    <div class="flex items-center justify-between border-t pt-3 dark:border-zinc-700">
-                        <flux:text class="text-zinc-500">Total a cobrar</flux:text>
-                        <flux:heading size="xl">S/ {{ number_format($this->subtotal, 2) }}</flux:heading>
-                    </div>
                 @endif
 
-                <flux:button variant="primary" wire:click="openConfirm" :disabled="empty($cart)" class="w-full">
-                    Confirmar y emitir boleta
-                </flux:button>
+                {{-- En telefono el total y el boton quedan pegados al fondo de la ventana:
+                     cobrar no deberia exigir bajar hasta el final de la lista. --}}
+                <div class="space-y-3 max-lg:sticky max-lg:bottom-0 max-lg:z-20 max-lg:-mx-4 max-lg:bg-white/95 max-lg:px-4 max-lg:py-3 max-lg:backdrop-blur-md max-lg:dark:bg-[#1e2226]/95">
+                    @if (! empty($cart))
+                        <div class="flex items-center justify-between border-t pt-3 dark:border-zinc-700">
+                            <flux:text class="text-zinc-500">Total a cobrar</flux:text>
+                            <flux:heading size="xl">S/ {{ number_format($this->subtotal, 2) }}</flux:heading>
+                        </div>
+                    @endif
+
+                    <flux:button variant="primary" wire:click="openConfirm" :disabled="empty($cart)" class="w-full max-sm:min-h-11">
+                        Confirmar y emitir boleta
+                    </flux:button>
+                </div>
             </flux:card>
         </div>
     </div>
