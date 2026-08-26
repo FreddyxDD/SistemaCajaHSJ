@@ -36,6 +36,17 @@ new #[Title('Nuevo cobro')] class extends Component {
 
     public ?string $patientHcNumber = null;
 
+    /** Identificacion completa del paciente elegido, para la ficha y el modal. */
+    public ?string $patientDocType = null;
+
+    public ?string $patientDocNumber = null;
+
+    public ?string $patientBirthDate = null;
+
+    public ?int $patientAge = null;
+
+    public ?string $patientSex = null;
+
     /** Historia_clinica.IdPaciente: el cruce hacia SIGH para leer sus atenciones. */
     public ?int $patientSighId = null;
 
@@ -105,14 +116,19 @@ new #[Title('Nuevo cobro')] class extends Component {
             ->limit(8)
             ->get();
 
+        // Las columnas del legado son `char` de ancho fijo: todo lo que se muestre en
+        // crudo necesita trim() o sale con decenas de espacios de relleno.
         $enCaja = $historias->map(fn ($historia) => [
             'source' => 'caja',
             'key' => $historia->id_hc,
             'nombre' => $historia->full_name,
             'hc' => $historia->historia_number,
             'documento' => trim((string) $historia->dni),
+            'tipo_documento' => trim((string) $historia->tipo_documento) ?: 'DNI',
+            'fecha_nacimiento' => trim((string) $historia->fec_nac) ?: null,
             'edad' => $historia->age,
             'sexo' => $historia->sex_label,
+            'id_paciente' => $historia->IdPaciente ? (int) $historia->IdPaciente : null,
         ]);
 
         $yaRegistrados = $historias->pluck('IdPaciente')->filter()->values()->all();
@@ -121,6 +137,9 @@ new #[Title('Nuevo cobro')] class extends Component {
             $enSigh = Patient::query()
                 ->search($this->patientQuery)
                 ->when($yaRegistrados, fn ($query) => $query->whereNotIn('IdPaciente', $yaRegistrados))
+                // Eager load del tipo de documento: sin esto son 8 consultas extra,
+                // una por resultado.
+                ->with('documentType')
                 ->orderBy('ApellidoPaterno')
                 ->orderBy('ApellidoMaterno')
                 ->limit(8)
@@ -131,8 +150,11 @@ new #[Title('Nuevo cobro')] class extends Component {
                     'nombre' => $paciente->full_name,
                     'hc' => (string) $paciente->NroHistoriaClinica,
                     'documento' => trim((string) $paciente->NroDocumento),
+                    'tipo_documento' => trim((string) ($paciente->documentType?->Descripcion ?? '')) ?: 'Documento',
+                    'fecha_nacimiento' => $paciente->FechaNacimiento?->format('d/m/Y'),
                     'edad' => $paciente->age,
                     'sexo' => $paciente->sex_label,
+                    'id_paciente' => (int) $paciente->IdPaciente,
                 ]);
         } catch (\Throwable $e) {
             // Si SIGH no responde, la caja sigue trabajando con lo que ya tiene.
@@ -396,7 +418,14 @@ new #[Title('Nuevo cobro')] class extends Component {
         $this->resetErrorBag('patientId');
         $this->patientId = $historia->id_hc;
         $this->patientLabel = $historia->full_name;
-        $this->patientDocLabel = trim((string) $historia->dni) !== '' ? 'DNI '.trim($historia->dni) : 'Sin documento';
+        $this->patientDocType = trim((string) $historia->tipo_documento) ?: 'DNI';
+        $this->patientDocNumber = trim((string) $historia->dni);
+        $this->patientDocLabel = $this->patientDocNumber !== ''
+            ? $this->patientDocType.' '.$this->patientDocNumber
+            : 'Sin documento';
+        $this->patientBirthDate = trim((string) $historia->fec_nac) ?: null;
+        $this->patientAge = $historia->age;
+        $this->patientSex = $historia->sex_label;
         $this->patientMeta = collect([
             $historia->age !== null ? $historia->age.' años' : null,
             $historia->sex_label,
@@ -413,6 +442,11 @@ new #[Title('Nuevo cobro')] class extends Component {
         $this->patientId = null;
         $this->patientLabel = null;
         $this->patientDocLabel = null;
+        $this->patientDocType = null;
+        $this->patientDocNumber = null;
+        $this->patientBirthDate = null;
+        $this->patientAge = null;
+        $this->patientSex = null;
         $this->patientMeta = null;
         $this->patientHc = null;
         $this->patientHcNumber = null;
@@ -790,25 +824,52 @@ new #[Title('Nuevo cobro')] class extends Component {
         </div>
     @endif
 
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div class="space-y-4 lg:col-span-2">
+    {{-- El trabajo real esta en el catalogo, no en el carrito: el panel de busqueda
+         se lleva dos tercios, y tres cuartos en pantallas muy anchas. --}}
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] 2xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)]">
+        <div class="space-y-4 lg:col-span-2 xl:col-span-1">
             {{-- 1 y 2 en una sola fila: paciente y forma de pago --}}
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <flux:card class="space-y-3">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <flux:card class="space-y-3 p-4! sm:col-span-2">
                 <flux:subheading>1. Paciente</flux:subheading>
 
                 @if ($patientId)
-                    <div class="flex items-center justify-between rounded-lg bg-accent/10 p-3">
-                        <div>
-                            <flux:text class="text-base font-medium">{{ $patientLabel }}</flux:text>
-                            <flux:text class="text-sm text-zinc-500">
-                                {{ $patientDocLabel }} · HC {{ $patientHcNumber }}
-                                @if ($patientMeta)
-                                    · {{ $patientMeta }}
-                                @endif
-                            </flux:text>
+                    {{-- Ficha completa, no una linea: es la identificacion contra la que
+                         se emite el comprobante y el cajero debe poder verificarla toda. --}}
+                    <div class="rounded-lg bg-accent/10 p-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <flux:text class="text-base font-medium text-pretty">{{ $patientLabel }}</flux:text>
+                            <flux:button size="sm" variant="ghost" wire:click="clearPatient" class="shrink-0">Cambiar</flux:button>
                         </div>
-                        <flux:button size="sm" variant="ghost" wire:click="clearPatient">Cambiar</flux:button>
+
+                        <dl class="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
+                            <div>
+                                <dt class="text-xs text-zinc-500">Historia clínica</dt>
+                                <dd class="font-medium">{{ $patientHcNumber }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-xs text-zinc-500">{{ $patientDocType ?: 'Documento' }}</dt>
+                                <dd class="font-medium">{{ $patientDocNumber ?: '—' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-xs text-zinc-500">Fecha de nacimiento</dt>
+                                <dd class="font-medium">{{ $patientBirthDate ?: '—' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-xs text-zinc-500">Edad</dt>
+                                <dd class="font-medium">{{ $patientAge !== null ? $patientAge.' años' : '—' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-xs text-zinc-500">Sexo</dt>
+                                <dd class="font-medium">{{ $patientSex ?: '—' }}</dd>
+                            </div>
+                            @if ($patientSighId)
+                                <div>
+                                    <dt class="text-xs text-zinc-500">Id SIGH</dt>
+                                    <dd class="font-medium">{{ $patientSighId }}</dd>
+                                </div>
+                            @endif
+                        </dl>
                     </div>
 
                     @if ($patientJustRegistered)
@@ -887,10 +948,10 @@ new #[Title('Nuevo cobro')] class extends Component {
                                     <button
                                         type="button"
                                         wire:click="selectPatient('{{ $result['key'] }}', '{{ $result['source'] }}')"
-                                        class="w-full px-3 py-2 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                        class="w-full px-3 py-2 text-left max-sm:min-h-11 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                                     >
                                         <div class="flex flex-wrap items-center gap-2">
-                                            <span class="font-medium">{{ $result['nombre'] }}</span>
+                                            <span class="font-medium text-pretty">{{ $result['nombre'] }}</span>
                                             @if ($result['source'] === 'sigh')
                                                 {{-- Existe en SIGH pero todavia no en Caja: al elegirlo se registra su HC. --}}
                                                 <flux:badge size="sm" color="sky">Solo en SIGH</flux:badge>
@@ -899,7 +960,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                                         <div class="text-sm text-zinc-500">
                                             HC {{ $result['hc'] }}
                                             @if ($result['documento'] !== '')
-                                                · DNI {{ $result['documento'] }}
+                                                · {{ $result['tipo_documento'] }} {{ $result['documento'] }}
                                             @endif
                                             @if ($result['edad'] !== null)
                                                 · {{ $result['edad'] }} años
@@ -917,7 +978,7 @@ new #[Title('Nuevo cobro')] class extends Component {
             </flux:card>
 
             {{-- 2. Forma de pago --}}
-            <flux:card class="space-y-3">
+            <flux:card class="space-y-3 p-4!">
                 <flux:subheading>2. Forma de pago</flux:subheading>
 
                 @if ($paymentMethodCode)
@@ -958,7 +1019,7 @@ new #[Title('Nuevo cobro')] class extends Component {
             </div>
 
             {{-- 3. Catalogo --}}
-            <flux:card class="space-y-3">
+            <flux:card class="space-y-3 p-4!">
                 <flux:subheading>3. Catálogo de servicios</flux:subheading>
 
                 @if (! $paymentMethodCode)
@@ -1196,7 +1257,7 @@ new #[Title('Nuevo cobro')] class extends Component {
 
         {{-- Vista previa de la venta, fija a la derecha en escritorio --}}
         <div class="lg:sticky lg:top-6 lg:h-fit">
-            <flux:card class="space-y-4">
+            <flux:card class="space-y-4 p-4!">
                 <div class="flex items-center justify-between">
                     <flux:subheading>4. Vista previa de la venta</flux:subheading>
                     @if ($this->cartCount > 0)
@@ -1211,7 +1272,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                         @foreach ($cart as $index => $line)
                             <div class="flex items-start justify-between gap-2 border-b pb-3 last:border-0 dark:border-zinc-700">
                                 <div class="min-w-0 flex-1">
-                                    <flux:text class="line-clamp-2 text-sm font-medium">{{ $line['descripcion'] }}</flux:text>
+                                    <flux:text class="text-sm font-medium text-pretty">{{ $line['descripcion'] }}</flux:text>
                                     <div class="mt-1 flex items-center gap-2">
                                         <button type="button" wire:click="updateQuantity({{ $index }}, {{ $line['cantidad'] - 1 }})" class="flex size-6 items-center justify-center rounded-full border text-sm max-sm:size-11 dark:border-zinc-600">−</button>
                                         <span class="w-6 text-center text-sm">{{ $line['cantidad'] }}</span>
@@ -1248,24 +1309,54 @@ new #[Title('Nuevo cobro')] class extends Component {
     </div>
 
     {{-- Confirmacion antes de emitir: el cobro se escribe en la base recien al aceptar --}}
-    <flux:modal name="confirmar-cobro" class="max-w-xl">
+    <flux:modal name="confirmar-cobro" class="max-w-3xl">
         <div class="space-y-5">
             <div>
                 <flux:heading size="lg">Confirmar cobro</flux:heading>
                 <flux:subheading>Revisa los datos antes de emitir. Al aceptar se registra la boleta y se abrirá la impresión.</flux:subheading>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 rounded-lg border border-zinc-200 p-3 text-sm dark:border-white/10">
-                <div>
-                    <flux:text class="text-xs text-zinc-500">Paciente</flux:text>
-                    <flux:text class="font-medium">{{ $patientLabel }}</flux:text>
-                    <flux:text class="block text-xs text-zinc-500">{{ $patientDocLabel }} · HC {{ $patientHcNumber }}</flux:text>
-                </div>
-                <div>
-                    <flux:text class="text-xs text-zinc-500">Forma de pago</flux:text>
-                    <flux:text class="font-medium">{{ $this->paymentBreadcrumb->pluck('nom_forma_pago')->implode(' › ') }}</flux:text>
-                    <flux:text class="block text-xs text-zinc-500">Turno {{ $this->currentSession?->cod_aper_cierre_caja }}</flux:text>
-                </div>
+            {{-- Identificacion completa, no resumida: esta es la ultima pantalla antes
+                 de emitir, y un dato equivocado aqui cuesta una anulacion. --}}
+            <div class="rounded-lg border border-zinc-200 p-3 text-sm dark:border-white/10">
+                <flux:text class="text-base font-medium text-pretty">{{ $patientLabel }}</flux:text>
+
+                <dl class="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3 lg:grid-cols-4">
+                    <div>
+                        <dt class="text-xs text-zinc-500">Historia clínica</dt>
+                        <dd class="font-medium">{{ $patientHcNumber }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-zinc-500">{{ $patientDocType ?: 'Documento' }}</dt>
+                        <dd class="font-medium">{{ $patientDocNumber ?: '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-zinc-500">Fecha de nacimiento</dt>
+                        <dd class="font-medium">{{ $patientBirthDate ?: '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-zinc-500">Edad</dt>
+                        <dd class="font-medium">{{ $patientAge !== null ? $patientAge.' años' : '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-zinc-500">Sexo</dt>
+                        <dd class="font-medium">{{ $patientSex ?: '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-zinc-500">Forma de pago</dt>
+                        <dd class="font-medium">{{ $this->paymentBreadcrumb->pluck('nom_forma_pago')->implode(' › ') }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-zinc-500">Turno</dt>
+                        <dd class="font-medium">{{ $this->currentSession?->cod_aper_cierre_caja }}</dd>
+                    </div>
+                    @if ($patientSighId)
+                        <div>
+                            <dt class="text-xs text-zinc-500">Id SIGH</dt>
+                            <dd class="font-medium">{{ $patientSighId }}</dd>
+                        </div>
+                    @endif
+                </dl>
             </div>
 
             <div class="max-h-56 space-y-2 overflow-y-auto rounded-lg border border-zinc-200 p-3 dark:border-white/10">
@@ -1273,7 +1364,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                     <div class="flex items-start justify-between gap-3 text-sm">
                         <span class="min-w-0 flex-1">
                             <span class="text-zinc-500">{{ (int) $line['cantidad'] }}×</span>
-                            {{ \Illuminate\Support\Str::limit($line['descripcion'], 80) }}
+                            <span class="text-pretty">{{ $line['descripcion'] }}</span>
                         </span>
                         <span class="shrink-0 font-medium whitespace-nowrap">S/ {{ number_format($line['precio'] * $line['cantidad'], 2) }}</span>
                     </div>
