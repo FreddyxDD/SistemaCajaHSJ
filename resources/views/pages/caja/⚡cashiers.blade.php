@@ -221,10 +221,10 @@ new #[Title('Cajeros y turnos')] class extends Component {
 
         <div class="acrilico p-5">
             <div class="flex items-center gap-2">
-                <flux:icon.banknotes class="size-4 text-indigo-500" />
+                <flux:icon.banknotes class="size-4 text-accent" />
                 <flux:text class="text-sm text-zinc-500">Recaudado</flux:text>
             </div>
-            <div class="mt-1 text-3xl font-semibold text-indigo-600 dark:text-indigo-400">S/ {{ number_format($this->totals['recaudado'], 2) }}</div>
+            <div class="mt-1 text-3xl font-semibold text-accent">S/ {{ number_format($this->totals['recaudado'], 2) }}</div>
             <flux:text class="text-xs text-zinc-500">{{ $this->totals['boletas'] }} comprobantes</flux:text>
         </div>
 
@@ -261,13 +261,13 @@ new #[Title('Cajeros y turnos')] class extends Component {
                         <button
                             type="button"
                             wire:click="selectCashier('{{ $c->cod_usu }}')"
-                            class="flex w-full items-center gap-3 px-4 py-3 text-left {{ $active ? 'bg-indigo-50 dark:bg-indigo-400/10' : 'hover:bg-zinc-50 dark:hover:bg-white/5' }}"
+                            class="flex w-full items-center gap-3 px-4 py-3 text-left {{ $active ? 'bg-accent/10' : 'hover:bg-zinc-50 dark:hover:bg-white/5' }}"
                         >
                             <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
                                 {{ \Illuminate\Support\Str::of($c->nombre ?? $c->cod_usu)->explode(' ')->take(2)->map(fn ($w) => mb_substr($w, 0, 1))->implode('') }}
                             </div>
                             <div class="min-w-0 flex-1">
-                                <div class="truncate text-sm font-medium {{ $active ? 'text-indigo-700 dark:text-indigo-400' : '' }}">
+                                <div class="truncate text-sm font-medium {{ $active ? 'text-accent' : '' }}">
                                     {{ $c->nombre ?? 'Sin nombre' }}
                                 </div>
                                 <div class="flex items-center gap-2 text-xs text-zinc-500">

@@ -127,9 +127,9 @@ new #[Title('Usuarios')] class extends Component {
     </div>
 
     @if (session('ok'))
-        <div class="flex items-start gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-500/30 dark:bg-indigo-400/10">
-            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
-            <flux:text class="text-indigo-800 dark:text-indigo-300">{{ session('ok') }}</flux:text>
+        <div class="flex items-start gap-3 rounded-xl border border-accent/30 bg-accent/10 p-4">
+            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-accent" />
+            <flux:text class="text-accent">{{ session('ok') }}</flux:text>
         </div>
     @endif
 
@@ -188,12 +188,12 @@ new #[Title('Usuarios')] class extends Component {
 
                         <div class="grid gap-2 sm:grid-cols-2">
                             @foreach ($this->roles as $role)
-                                <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-zinc-200 bg-white p-3 hover:border-indigo-400 dark:border-white/10 dark:bg-white/5">
+                                <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-zinc-200 bg-white p-3 hover:border-accent dark:border-white/10 dark:bg-white/5">
                                     <input
                                         type="checkbox"
                                         value="{{ $role->id }}"
                                         wire:model="selectedRoles"
-                                        class="mt-0.5 size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
+                                        class="mt-0.5 size-4 rounded border-zinc-300 text-accent focus:ring-accent"
                                     >
                                     <span class="min-w-0">
                                         <span class="block text-sm font-medium">{{ $role->name }}</span>

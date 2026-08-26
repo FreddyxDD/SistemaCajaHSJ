@@ -143,9 +143,9 @@ new #[Title('Detalle de cobro')] class extends Component {
     </div>
 
     @if (session('ok'))
-        <div class="flex items-start gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4 print:hidden dark:border-indigo-500/30 dark:bg-indigo-400/10">
-            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
-            <flux:text class="text-indigo-800 dark:text-indigo-300">{{ session('ok') }}</flux:text>
+        <div class="flex items-start gap-3 rounded-xl border border-accent/30 bg-accent/10 p-4 print:hidden">
+            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-accent" />
+            <flux:text class="text-accent">{{ session('ok') }}</flux:text>
         </div>
     @endif
 

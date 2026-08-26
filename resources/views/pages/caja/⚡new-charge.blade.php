@@ -798,7 +798,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                 <flux:subheading>1. Paciente</flux:subheading>
 
                 @if ($patientId)
-                    <div class="flex items-center justify-between rounded-lg bg-indigo-50 p-3 dark:bg-indigo-400/10">
+                    <div class="flex items-center justify-between rounded-lg bg-accent/10 p-3">
                         <div>
                             <flux:text class="text-base font-medium">{{ $patientLabel }}</flux:text>
                             <flux:text class="text-sm text-zinc-500">
@@ -921,7 +921,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                 <flux:subheading>2. Forma de pago</flux:subheading>
 
                 @if ($paymentMethodCode)
-                    <div class="flex items-center justify-between rounded-lg bg-indigo-50 p-3 dark:bg-indigo-400/10">
+                    <div class="flex items-center justify-between rounded-lg bg-accent/10 p-3">
                         <flux:text class="font-medium">
                             {{ $this->paymentBreadcrumb->pluck('nom_forma_pago')->implode(' › ') }}
                         </flux:text>
@@ -946,7 +946,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                             <button
                                 type="button"
                                 wire:click="choosePaymentOption('{{ $option->cod_jerar_forma_pago }}')"
-                                class="rounded-full border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:border-indigo-500 hover:bg-indigo-50 dark:border-zinc-600 dark:hover:bg-indigo-400/10"
+                                class="rounded-full border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:border-accent hover:bg-accent/10 dark:border-zinc-600 "
                             >
                                 {{ $option->nom_forma_pago }}
                             </button>
@@ -1012,11 +1012,11 @@ new #[Title('Nuevo cobro')] class extends Component {
                     {{-- Modo: buscador libre vs hoja de solicitud (formato de Admisión) --}}
                     <div class="inline-flex rounded-lg border border-zinc-300 p-0.5 dark:border-zinc-600">
                         <button type="button" wire:click="$set('catalogMode', 'buscar')"
-                            class="rounded-md px-3 py-1.5 text-sm font-medium {{ $catalogMode === 'buscar' ? 'bg-indigo-500 text-white' : 'text-zinc-600 dark:text-zinc-300' }}">
+                            class="rounded-md px-3 py-1.5 text-sm font-medium {{ $catalogMode === 'buscar' ? 'bg-accent text-white' : 'text-zinc-600 dark:text-zinc-300' }}">
                             Búsqueda rápida
                         </button>
                         <button type="button" wire:click="$set('catalogMode', 'hoja')"
-                            class="rounded-md px-3 py-1.5 text-sm font-medium {{ $catalogMode === 'hoja' ? 'bg-indigo-500 text-white' : 'text-zinc-600 dark:text-zinc-300' }}">
+                            class="rounded-md px-3 py-1.5 text-sm font-medium {{ $catalogMode === 'hoja' ? 'bg-accent text-white' : 'text-zinc-600 dark:text-zinc-300' }}">
                             Hoja de solicitud
                         </button>
                     </div>
@@ -1025,7 +1025,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                         <div class="flex flex-wrap gap-2">
                             @foreach ($this->sheets as $key => $s)
                                 <button type="button" wire:click="$set('sheetKey', '{{ $key }}')"
-                                    class="rounded-full border px-3 py-1.5 text-sm font-medium {{ $sheetKey === $key ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-400' : 'border-zinc-300 hover:border-indigo-500 dark:border-zinc-600' }}">
+                                    class="rounded-full border px-3 py-1.5 text-sm font-medium {{ $sheetKey === $key ? 'border-accent bg-accent/10 text-accent' : 'border-zinc-300 hover:border-accent dark:border-zinc-600' }}">
                                     {{ $s['label'] }}
                                 </button>
                             @endforeach
@@ -1077,11 +1077,11 @@ new #[Title('Nuevo cobro')] class extends Component {
                                         <tbody>
                                             @foreach ($rows as $row)
                                                 @php $sel = $row['cod_precio'] && in_array($row['cod_precio'], $this->selectedPrices, true); @endphp
-                                                <tr class="{{ $sel ? 'bg-indigo-50 dark:bg-indigo-400/10' : '' }} {{ $row['cod_precio'] ? 'cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5' : 'opacity-50' }}"
+                                                <tr class="{{ $sel ? 'bg-accent/10' : '' }} $row['cod_precio'] 'cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5' 'opacity-50'"
                                                     @if ($row['cod_precio']) wire:click="toggleItem('{{ $row['cod_precio'] }}')" @endif>
                                                     <td class="px-2 py-1.5 text-center">
                                                         @if ($sel)
-                                                            <flux:icon.check-circle class="size-4 text-indigo-500" />
+                                                            <flux:icon.check-circle class="size-4 text-accent" />
                                                         @elseif ($row['cod_precio'])
                                                             <span class="inline-block size-3.5 rounded border border-zinc-400"></span>
                                                         @else
@@ -1089,7 +1089,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                                                         @endif
                                                     </td>
                                                     <td class="px-2 py-1.5 font-mono text-xs whitespace-nowrap text-zinc-500">{{ $row['codigo'] }}</td>
-                                                    <td class="px-2 py-1.5 break-words whitespace-normal {{ $sel ? 'font-medium text-indigo-700 dark:text-indigo-400' : '' }}">
+                                                    <td class="px-2 py-1.5 break-words whitespace-normal {{ $sel ? 'font-medium text-accent' : '' }}">
                                                         {{ $row['descripcion'] }}
                                                         @php $cambio = $this->recentCatalogChanges[$row['cod_nomen_caja'] ?? ''] ?? null; @endphp
                                                         @if ($cambio)
@@ -1131,7 +1131,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                             <button
                                 type="button"
                                 wire:click="setCategoryFilter(null)"
-                                class="rounded-full border px-3 py-1.5 text-sm font-medium {{ ! $categoryFilter ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-400' : 'border-zinc-300 hover:border-indigo-500 dark:border-zinc-600' }}"
+                                class="rounded-full border px-3 py-1.5 text-sm font-medium {{ ! $categoryFilter ? 'border-accent bg-accent/10 text-accent' : 'border-zinc-300 hover:border-accent dark:border-zinc-600' }}"
                             >
                                 Todos
                             </button>
@@ -1139,7 +1139,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                                 <button
                                     type="button"
                                     wire:click="setCategoryFilter('{{ $cat->codigo_grupo }}')"
-                                    class="rounded-full border px-3 py-1.5 text-sm font-medium {{ $categoryFilter === $cat->codigo_grupo ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-400' : 'border-zinc-300 hover:border-indigo-500 dark:border-zinc-600' }}"
+                                    class="rounded-full border px-3 py-1.5 text-sm font-medium {{ $categoryFilter === $cat->codigo_grupo ? 'border-accent bg-accent/10 text-accent' : 'border-zinc-300 hover:border-accent dark:border-zinc-600' }}"
                                 >
                                     {{ ucfirst(mb_strtolower($cat->nombre_grupo_nomen)) }}
                                 </button>
@@ -1160,10 +1160,10 @@ new #[Title('Nuevo cobro')] class extends Component {
                             <button
                                 type="button"
                                 wire:click="toggleItem('{{ $price->cod_precio }}')"
-                                class="flex w-full items-center justify-between gap-4 px-3 py-2.5 text-left {{ $isSelected ? 'bg-indigo-50 dark:bg-indigo-400/10' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}"
+                                class="flex w-full items-center justify-between gap-4 px-3 py-2.5 text-left {{ $isSelected ? 'bg-accent/10' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}"
                             >
                                 <span class="min-w-0 flex-1">
-                                    <span class="text-sm {{ $isSelected ? 'font-medium text-indigo-700 dark:text-indigo-400' : '' }}">
+                                    <span class="text-sm {{ $isSelected ? 'font-medium text-accent' : '' }}">
                                         {{ $price->billableItem?->descripcion_nomen_tipo }}
                                     </span>
 
@@ -1177,7 +1177,7 @@ new #[Title('Nuevo cobro')] class extends Component {
                                 <span class="flex shrink-0 items-center gap-2">
                                     <span class="font-medium whitespace-nowrap">S/ {{ number_format($price->precio, 2) }}</span>
                                     @if ($isSelected)
-                                        <flux:icon.check-circle class="size-5 text-indigo-500" />
+                                        <flux:icon.check-circle class="size-5 text-accent" />
                                     @else
                                         <flux:icon.plus-circle class="size-5 text-zinc-400" />
                                     @endif
@@ -1273,9 +1273,9 @@ new #[Title('Nuevo cobro')] class extends Component {
                 @endforeach
             </div>
 
-            <div class="flex items-center justify-between rounded-lg bg-indigo-50 px-4 py-3 dark:bg-indigo-400/10">
+            <div class="flex items-center justify-between rounded-lg bg-accent/10 px-4 py-3">
                 <flux:text class="font-medium">Total a cobrar</flux:text>
-                <flux:heading size="lg" class="text-indigo-700! dark:text-indigo-400!">S/ {{ number_format($this->subtotal, 2) }}</flux:heading>
+                <flux:heading size="lg" class="text-accent! !">S/ {{ number_format($this->subtotal, 2) }}</flux:heading>
             </div>
 
             <div class="flex justify-end gap-2">

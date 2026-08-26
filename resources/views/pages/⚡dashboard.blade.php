@@ -214,9 +214,9 @@ new #[Title('Panel')] class extends Component {
     {{-- KPIs principales --}}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="relative overflow-hidden acrilico p-5">
-            <div class="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-indigo-500/10"></div>
+            <div class="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-accent/10"></div>
             <flux:text class="text-sm text-zinc-500">Recaudado hoy</flux:text>
-            <div class="mt-1 text-3xl font-semibold text-indigo-600 dark:text-indigo-400">S/ {{ number_format($this->today['total'], 2) }}</div>
+            <div class="mt-1 text-3xl font-semibold text-accent">S/ {{ number_format($this->today['total'], 2) }}</div>
             <flux:text class="mt-1 text-xs text-zinc-500">{{ $this->today['cobros'] }} {{ Str::plural('cobro', $this->today['cobros']) }} emitidos</flux:text>
         </div>
 
@@ -248,7 +248,7 @@ new #[Title('Panel')] class extends Component {
                     <div class="flex flex-1 flex-col items-center gap-2">
                         <flux:text class="text-xs text-zinc-500">S/ {{ number_format($day['total'], 0) }}</flux:text>
                         <div class="flex h-28 w-full items-end rounded-md bg-zinc-100 dark:bg-white/10">
-                            <div class="w-full rounded-md bg-indigo-500 transition-all dark:bg-indigo-400" style="height: {{ $day['pct'] }}%"></div>
+                            <div class="w-full rounded-md bg-accent transition-all" style="height: {{ $day['pct'] }}%"></div>
                         </div>
                         <flux:text class="text-xs text-zinc-500 capitalize">{{ $day['label'] }}</flux:text>
                     </div>
@@ -272,7 +272,7 @@ new #[Title('Panel')] class extends Component {
                                 <span class="font-medium">S/ {{ number_format($group->total, 2) }}</span>
                             </div>
                             <div class="mt-1 h-2 w-full rounded-full bg-zinc-100 dark:bg-white/10">
-                                <div class="h-2 rounded-full bg-indigo-500 dark:bg-indigo-400" style="width: {{ max(4, round($group->total / $maxGroup * 100)) }}%"></div>
+                                <div class="h-2 rounded-full bg-accent" style="width: {{ max(4, round($group->total / $maxGroup * 100)) }}%"></div>
                             </div>
                         </div>
                     @endforeach
@@ -304,7 +304,7 @@ new #[Title('Panel')] class extends Component {
                                 @endif
                             </div>
                         </div>
-                        <div class="shrink-0 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                        <div class="shrink-0 text-sm font-semibold text-accent">
                             S/ {{ number_format($c->recaudado, 2) }}
                         </div>
                     </div>

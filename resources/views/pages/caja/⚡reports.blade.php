@@ -131,7 +131,7 @@ new #[Title('Reportes de caja')] class extends Component {
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Total recaudado</flux:text>
-            <div class="mt-1 text-2xl font-semibold text-indigo-600 dark:text-indigo-400">S/ {{ number_format($this->summary['total'], 2) }}</div>
+            <div class="mt-1 text-2xl font-semibold text-accent">S/ {{ number_format($this->summary['total'], 2) }}</div>
         </div>
         <div class="acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Comprobantes emitidos</flux:text>
@@ -211,7 +211,7 @@ new #[Title('Reportes de caja')] class extends Component {
                 @foreach ($this->byDay as $day)
                     <div class="flex h-full min-w-8 flex-1 flex-col items-center justify-end gap-1" title="{{ \Illuminate\Support\Carbon::parse($day->dia)->format('d/m/Y') }}: S/ {{ number_format($day->total, 2) }}">
                         <div class="flex w-full flex-1 items-end rounded-md bg-zinc-100 dark:bg-white/10">
-                            <div class="w-full rounded-md bg-indigo-500 dark:bg-indigo-400" style="height: {{ max(4, round($day->total / $maxDay * 100)) }}%"></div>
+                            <div class="w-full rounded-md bg-accent" style="height: {{ max(4, round($day->total / $maxDay * 100)) }}%"></div>
                         </div>
                         <flux:text class="text-[10px] text-zinc-500">{{ \Illuminate\Support\Carbon::parse($day->dia)->format('d/m') }}</flux:text>
                     </div>

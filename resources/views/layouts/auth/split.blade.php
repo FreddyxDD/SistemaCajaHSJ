@@ -7,8 +7,8 @@
         <div class="relative grid h-dvh flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0">
             <div class="relative hidden h-full flex-col justify-between overflow-hidden p-10 text-white lg:flex dark:border-e dark:border-neutral-800">
                 <div class="absolute inset-0 bg-linear-to-br from-indigo-950 via-neutral-950 to-neutral-950"></div>
-                <div class="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl"></div>
-                <div class="absolute -bottom-32 -left-16 h-96 w-96 rounded-full bg-indigo-400/10 blur-3xl"></div>
+                <div class="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-accent/10 blur-3xl"></div>
+                <div class="absolute -bottom-32 -left-16 h-96 w-96 rounded-full bg-accent/10 blur-3xl"></div>
 
                 <a href="{{ route('home') }}" class="relative z-20 flex items-center gap-2 text-lg font-medium" wire:navigate>
                     <span class="flex h-10 w-10 items-center justify-center rounded-md bg-white/10">
@@ -24,21 +24,21 @@
 
                     <ul class="space-y-5">
                         <li class="flex items-start gap-3">
-                            <flux:icon.clock class="mt-0.5 size-5 shrink-0 text-indigo-400" />
+                            <flux:icon.clock class="mt-0.5 size-5 shrink-0 text-accent" />
                             <div>
                                 <p class="font-medium text-white">Turnos con trazabilidad</p>
                                 <p class="text-sm text-white/60">Apertura y cierre de caja quedan registrados por usuario, fecha y hora.</p>
                             </div>
                         </li>
                         <li class="flex items-start gap-3">
-                            <flux:icon.magnifying-glass class="mt-0.5 size-5 shrink-0 text-indigo-400" />
+                            <flux:icon.magnifying-glass class="mt-0.5 size-5 shrink-0 text-accent" />
                             <div>
                                 <p class="font-medium text-white">Cobro rápido</p>
                                 <p class="text-sm text-white/60">Busca al paciente por nombre, documento o historia clínica y factura con el precio correcto según la forma de pago.</p>
                             </div>
                         </li>
                         <li class="flex items-start gap-3">
-                            <flux:icon.document-check class="mt-0.5 size-5 shrink-0 text-indigo-400" />
+                            <flux:icon.document-check class="mt-0.5 size-5 shrink-0 text-accent" />
                             <div>
                                 <p class="font-medium text-white">Historial completo</p>
                                 <p class="text-sm text-white/60">Cada comprobante emitido queda disponible para consulta y anulación con motivo.</p>

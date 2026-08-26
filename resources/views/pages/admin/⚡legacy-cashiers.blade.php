@@ -67,7 +67,7 @@ new #[Title('Cajeros del sistema')] class extends Component {
         <button
             type="button"
             wire:click="$set('tipo', 'all')"
-            class="rounded-full border px-3 py-1.5 text-sm font-medium {{ $tipo === 'all' ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-400' : 'border-zinc-300 hover:border-indigo-500 dark:border-zinc-600' }}"
+            class="rounded-full border px-3 py-1.5 text-sm font-medium {{ $tipo === 'all' ? 'border-accent bg-accent/10 text-accent' : 'border-zinc-300 hover:border-accent dark:border-zinc-600' }}"
         >
             Todos
         </button>
@@ -75,7 +75,7 @@ new #[Title('Cajeros del sistema')] class extends Component {
             <button
                 type="button"
                 wire:click="$set('tipo', '{{ $t->cod_tipo }}')"
-                class="flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium {{ $tipo === $t->cod_tipo ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-400' : 'border-zinc-300 hover:border-indigo-500 dark:border-zinc-600' }}"
+                class="flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium {{ $tipo === $t->cod_tipo ? 'border-accent bg-accent/10 text-accent' : 'border-zinc-300 hover:border-accent dark:border-zinc-600' }}"
             >
                 {{ ucfirst(mb_strtolower($t->descripcion)) }}
                 <span class="rounded-full bg-zinc-100 px-1.5 text-xs dark:bg-white/10">{{ $t->usuarios }}</span>
