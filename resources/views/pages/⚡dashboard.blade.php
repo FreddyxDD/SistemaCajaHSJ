@@ -213,26 +213,26 @@ new #[Title('Panel')] class extends Component {
 
     {{-- KPIs principales --}}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="relative overflow-hidden acrilico p-5">
+        <div class="lift relative overflow-hidden acrilico p-5">
             <div class="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-accent/10"></div>
             <flux:text class="text-sm text-zinc-500">Recaudado hoy</flux:text>
             <div class="mt-1 text-3xl font-semibold text-accent">S/ {{ number_format($this->today['total'], 2) }}</div>
             <flux:text class="mt-1 text-xs text-zinc-500">{{ $this->today['cobros'] }} {{ Str::plural('cobro', $this->today['cobros']) }} emitidos</flux:text>
         </div>
 
-        <div class="relative overflow-hidden acrilico p-5">
+        <div class="lift relative overflow-hidden acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Ticket promedio hoy</flux:text>
             <div class="mt-1 text-3xl font-semibold">S/ {{ number_format($this->today['ticket_promedio'], 2) }}</div>
             <flux:text class="mt-1 text-xs text-zinc-500">Por comprobante emitido</flux:text>
         </div>
 
-        <div class="relative overflow-hidden acrilico p-5">
+        <div class="lift relative overflow-hidden acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Cajas abiertas ahora</flux:text>
             <div class="mt-1 text-3xl font-semibold">{{ $this->openSessionsCount }}</div>
             <flux:text class="mt-1 text-xs text-zinc-500">Turnos activos en todo el hospital</flux:text>
         </div>
 
-        <div class="relative overflow-hidden acrilico p-5">
+        <div class="lift relative overflow-hidden acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Anulados hoy</flux:text>
             <div class="mt-1 text-3xl font-semibold {{ $this->today['anulados'] > 0 ? 'text-red-600 dark:text-red-400' : '' }}">{{ $this->today['anulados'] }}</div>
             <flux:text class="mt-1 text-xs text-zinc-500">Comprobantes anulados</flux:text>
@@ -291,7 +291,7 @@ new #[Title('Panel')] class extends Component {
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($this->cashiersToday as $c)
-                    <div class="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-white/10">
+                    <div class="lift flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-white/10">
                         <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
                             {{ \Illuminate\Support\Str::of($c->nombre ?? $c->cod_usu)->explode(' ')->take(2)->map(fn ($w) => mb_substr($w, 0, 1))->implode('') }}
                         </div>
