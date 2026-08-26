@@ -192,11 +192,15 @@
             </div>
 
             <flux:dropdown position="bottom" align="end">
+                {{-- En telefono queda solo el avatar: el nombre completo empujaba la
+                     barra 80px mas alla del ancho de la pantalla. El nombre sigue
+                     visible dentro del menu. --}}
                 <flux:profile
                     :name="$u->name"
                     :initials="$u->initials()"
                     icon-trailing="chevron-down"
                     data-test="header-menu-button"
+                    class="max-sm:[&>span]:hidden max-sm:[&>div:last-child]:hidden"
                 />
 
                 <flux:menu>

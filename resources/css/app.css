@@ -205,7 +205,16 @@ select:focus[data-flux-control] {
 }
 
 /* Hover/press genericos: elevacion en tarjetas y hundido en botones. */
-.lift,
+
+/* La tarjeta solo anima lo que le cambia al pasar el cursor. Con `background` aqui,
+   cambiar de tema hacia que todas las tarjetas cruzaran de color durante 0.2s en vez
+   de cambiar de golpe. */
+.lift {
+    transition:
+        transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.22s ease;
+}
+
 [data-flux-button],
 button {
     transition:
