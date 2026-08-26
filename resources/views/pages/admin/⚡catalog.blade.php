@@ -618,7 +618,7 @@ new #[Title('Catálogo de servicios')] class extends Component {
         clearable
     />
 
-    <div class="overflow-hidden acrilico rounded-xl border border-zinc-200 dark:border-white/10">
+    <div class="overflow-hidden acrilico">
         <div class="divide-y dark:divide-white/10">
             @forelse ($this->items as $item)
                 @php

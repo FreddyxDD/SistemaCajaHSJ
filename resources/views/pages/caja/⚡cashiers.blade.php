@@ -210,7 +210,7 @@ new #[Title('Cajeros y turnos')] class extends Component {
 
     {{-- Resumen del periodo --}}
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <div class="flex items-center gap-2">
                 <flux:icon.users class="size-4 text-zinc-400" />
                 <flux:text class="text-sm text-zinc-500">Cajeros con actividad</flux:text>
@@ -219,7 +219,7 @@ new #[Title('Cajeros y turnos')] class extends Component {
             <flux:text class="text-xs text-zinc-500">{{ $this->totals['turnos'] }} turnos en el periodo</flux:text>
         </div>
 
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <div class="flex items-center gap-2">
                 <flux:icon.banknotes class="size-4 text-indigo-500" />
                 <flux:text class="text-sm text-zinc-500">Recaudado</flux:text>
@@ -228,7 +228,7 @@ new #[Title('Cajeros y turnos')] class extends Component {
             <flux:text class="text-xs text-zinc-500">{{ $this->totals['boletas'] }} comprobantes</flux:text>
         </div>
 
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <div class="flex items-center gap-2">
                 <flux:icon.clock class="size-4 text-amber-500" />
                 <flux:text class="text-sm text-zinc-500">Turnos abiertos</flux:text>
@@ -237,7 +237,7 @@ new #[Title('Cajeros y turnos')] class extends Component {
             <flux:text class="text-xs text-zinc-500">Sin cerrar en el periodo</flux:text>
         </div>
 
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <div class="flex items-center gap-2">
                 <flux:icon.x-circle class="size-4 text-red-500" />
                 <flux:text class="text-sm text-zinc-500">Anuladas</flux:text>
@@ -250,7 +250,7 @@ new #[Title('Cajeros y turnos')] class extends Component {
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-5">
         {{-- Cajeros --}}
         <div class="lg:col-span-2">
-            <div class="overflow-hidden acrilico rounded-xl border border-zinc-200 dark:border-white/10">
+            <div class="overflow-hidden acrilico">
                 <div class="border-b border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-white/10 dark:bg-white/5">
                     <flux:subheading>Cajeros</flux:subheading>
                 </div>
@@ -295,7 +295,7 @@ new #[Title('Cajeros y turnos')] class extends Component {
 
         {{-- Turnos del cajero seleccionado --}}
         <div class="lg:col-span-3">
-            <div class="overflow-hidden acrilico rounded-xl border border-zinc-200 dark:border-white/10">
+            <div class="overflow-hidden acrilico">
                 <div class="border-b border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-white/10 dark:bg-white/5">
                     <flux:subheading>
                         {{ $this->cashier ? 'Turnos de '.$this->selectedCashierName : 'Turnos' }}

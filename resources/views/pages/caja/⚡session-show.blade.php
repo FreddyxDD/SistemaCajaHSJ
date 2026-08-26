@@ -176,20 +176,20 @@ new #[Title('Detalle de turno')] class extends Component {
     </div>
 
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Recaudado en el turno</flux:text>
             <div class="mt-1 text-2xl font-semibold text-indigo-600 dark:text-indigo-400">S/ {{ number_format($this->totals['recaudado'], 2) }}</div>
         </div>
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Comprobantes</flux:text>
             <div class="mt-1 text-2xl font-semibold">{{ $this->totals['boletas'] }}</div>
         </div>
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Anulados</flux:text>
             <div class="mt-1 text-2xl font-semibold {{ $this->totals['anuladas'] > 0 ? 'text-red-600 dark:text-red-400' : '' }}">{{ $this->totals['anuladas'] }}</div>
             <flux:text class="text-xs text-zinc-500">S/ {{ number_format($this->totals['perdido'], 2) }}</flux:text>
         </div>
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Apertura</flux:text>
             <div class="mt-1 text-sm font-medium">{{ $this->session->fecha_apertura }}</div>
             <flux:text class="text-xs text-zinc-500">{{ $this->session->hora_apertura }}</flux:text>
@@ -200,7 +200,7 @@ new #[Title('Detalle de turno')] class extends Component {
     </div>
 
     {{-- Cuadre por forma de pago --}}
-    <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+    <div class="acrilico p-5">
         <flux:subheading class="mb-4">Cuadre por forma de pago</flux:subheading>
 
         @if ($this->byPaymentMethod->isEmpty())
@@ -227,7 +227,7 @@ new #[Title('Detalle de turno')] class extends Component {
     </div>
 
     {{-- Recaudacion por cuenta contable: el mismo criterio del reporte impreso. --}}
-    <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+    <div class="acrilico p-5">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
             <flux:subheading>Recaudación por cuenta contable</flux:subheading>
             <flux:link
@@ -290,7 +290,7 @@ new #[Title('Detalle de turno')] class extends Component {
     </div>
 
     {{-- Boletas del turno --}}
-    <div class="overflow-hidden acrilico rounded-xl border border-zinc-200 dark:border-white/10">
+    <div class="overflow-hidden acrilico">
         <div class="space-y-3 border-b border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-white/10 dark:bg-white/5">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <flux:subheading>Comprobantes emitidos en este turno</flux:subheading>

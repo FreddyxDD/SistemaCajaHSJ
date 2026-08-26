@@ -162,7 +162,7 @@ new #[Title('Detalle de cobro')] class extends Component {
             </div>
         </div>
     @elseif ($this->voidRequest && $this->voidRequest->status === \App\Models\VoidRequest::STATUS_REJECTED)
-        <div class="flex items-start gap-3 acrilico rounded-xl border border-zinc-200 bg-zinc-50 p-4 print:hidden dark:border-white/10 dark:bg-white/5">
+        <div class="flex items-start gap-3 acrilico p-4 print:hidden">
             <flux:icon.x-circle class="mt-0.5 size-5 shrink-0 text-zinc-500" />
             <div>
                 <flux:text class="font-medium">Solicitud de anulación rechazada</flux:text>

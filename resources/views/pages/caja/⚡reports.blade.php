@@ -129,19 +129,19 @@ new #[Title('Reportes de caja')] class extends Component {
     </div>
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Total recaudado</flux:text>
             <div class="mt-1 text-2xl font-semibold text-indigo-600 dark:text-indigo-400">S/ {{ number_format($this->summary['total'], 2) }}</div>
         </div>
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Comprobantes emitidos</flux:text>
             <div class="mt-1 text-2xl font-semibold">{{ $this->summary['cobros'] }}</div>
         </div>
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Ticket promedio</flux:text>
             <div class="mt-1 text-2xl font-semibold">S/ {{ number_format($this->summary['ticket_promedio'], 2) }}</div>
         </div>
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Anulados</flux:text>
             <div class="mt-1 text-2xl font-semibold {{ $this->summary['anulados_cobros'] > 0 ? 'text-red-600 dark:text-red-400' : '' }}">
                 {{ $this->summary['anulados_cobros'] }}
@@ -151,7 +151,7 @@ new #[Title('Reportes de caja')] class extends Component {
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <flux:subheading class="mb-4">Recaudación por forma de pago</flux:subheading>
 
             @if ($this->byPaymentGroup->isEmpty())
@@ -181,7 +181,7 @@ new #[Title('Reportes de caja')] class extends Component {
             @endif
         </div>
 
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <flux:subheading class="mb-4">Top 10 servicios facturados</flux:subheading>
 
             @if ($this->topServices->isEmpty())
@@ -200,7 +200,7 @@ new #[Title('Reportes de caja')] class extends Component {
         </div>
     </div>
 
-    <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+    <div class="acrilico p-5">
         <flux:subheading class="mb-4">Recaudación por día</flux:subheading>
 
         @if ($this->byDay->isEmpty())

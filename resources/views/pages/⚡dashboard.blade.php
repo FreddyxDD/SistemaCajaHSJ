@@ -213,26 +213,26 @@ new #[Title('Panel')] class extends Component {
 
     {{-- KPIs principales --}}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="relative overflow-hidden acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="relative overflow-hidden acrilico p-5">
             <div class="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-indigo-500/10"></div>
             <flux:text class="text-sm text-zinc-500">Recaudado hoy</flux:text>
             <div class="mt-1 text-3xl font-semibold text-indigo-600 dark:text-indigo-400">S/ {{ number_format($this->today['total'], 2) }}</div>
             <flux:text class="mt-1 text-xs text-zinc-500">{{ $this->today['cobros'] }} {{ Str::plural('cobro', $this->today['cobros']) }} emitidos</flux:text>
         </div>
 
-        <div class="relative overflow-hidden acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="relative overflow-hidden acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Ticket promedio hoy</flux:text>
             <div class="mt-1 text-3xl font-semibold">S/ {{ number_format($this->today['ticket_promedio'], 2) }}</div>
             <flux:text class="mt-1 text-xs text-zinc-500">Por comprobante emitido</flux:text>
         </div>
 
-        <div class="relative overflow-hidden acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="relative overflow-hidden acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Cajas abiertas ahora</flux:text>
             <div class="mt-1 text-3xl font-semibold">{{ $this->openSessionsCount }}</div>
             <flux:text class="mt-1 text-xs text-zinc-500">Turnos activos en todo el hospital</flux:text>
         </div>
 
-        <div class="relative overflow-hidden acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="relative overflow-hidden acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Anulados hoy</flux:text>
             <div class="mt-1 text-3xl font-semibold {{ $this->today['anulados'] > 0 ? 'text-red-600 dark:text-red-400' : '' }}">{{ $this->today['anulados'] }}</div>
             <flux:text class="mt-1 text-xs text-zinc-500">Comprobantes anulados</flux:text>
@@ -241,7 +241,7 @@ new #[Title('Panel')] class extends Component {
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {{-- Tendencia 7 dias --}}
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 lg:col-span-2 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5 lg:col-span-2">
             <flux:subheading class="mb-4">Recaudación — últimos 7 días</flux:subheading>
             <div class="flex h-40 items-end gap-3">
                 @foreach ($this->last7Days as $day)
@@ -257,7 +257,7 @@ new #[Title('Panel')] class extends Component {
         </div>
 
         {{-- Recaudado por forma de pago --}}
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <flux:subheading class="mb-4">Hoy por forma de pago</flux:subheading>
 
             @if ($this->todayByPaymentGroup->isEmpty())
@@ -283,7 +283,7 @@ new #[Title('Panel')] class extends Component {
 
     {{-- Cajeros activos hoy --}}
     @if ($this->cashiersToday->isNotEmpty())
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <div class="mb-4 flex items-center justify-between">
                 <flux:subheading>Cajeros hoy</flux:subheading>
                 <flux:link href="{{ route('caja.cashiers.index') }}" wire:navigate class="text-sm">Ver todos</flux:link>
@@ -315,7 +315,7 @@ new #[Title('Panel')] class extends Component {
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {{-- Top servicios --}}
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <div class="mb-4 flex items-center justify-between">
                 <flux:subheading>Top servicios — últimos 30 días</flux:subheading>
                 <flux:link href="{{ route('caja.reports.index') }}" wire:navigate class="text-sm">Ver reportes</flux:link>
@@ -336,7 +336,7 @@ new #[Title('Panel')] class extends Component {
         </div>
 
         {{-- Cobros recientes --}}
-        <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <div class="acrilico p-5">
             <div class="mb-4 flex items-center justify-between">
                 <flux:subheading>Cobros recientes</flux:subheading>
                 <flux:link href="{{ route('caja.charges.index') }}" wire:navigate class="text-sm">Ver todos</flux:link>

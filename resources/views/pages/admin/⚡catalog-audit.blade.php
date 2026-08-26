@@ -136,7 +136,7 @@ new #[Title('Auditoría del catálogo')] class extends Component {
         @endphp
 
         @foreach ($tarjetas as [$titulo, $valor, $detalle])
-            <div class="acrilico rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+            <div class="acrilico p-5">
                 <flux:text class="text-sm text-zinc-500">{{ $titulo }}</flux:text>
                 <div class="mt-1 text-2xl font-semibold">{{ $valor }}</div>
                 <flux:text class="text-xs text-zinc-500">{{ $detalle }}</flux:text>
@@ -144,7 +144,7 @@ new #[Title('Auditoría del catálogo')] class extends Component {
         @endforeach
     </div>
 
-    <div class="acrilico space-y-3 rounded-xl border border-zinc-200 p-4 dark:border-white/10">
+    <div class="acrilico space-y-3 p-4">
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <flux:input
                 wire:model.live.debounce.400ms="itemFilter"
@@ -185,7 +185,7 @@ new #[Title('Auditoría del catálogo')] class extends Component {
         @forelse ($this->events as $evento)
             <x-catalog-audit-entry :event="$evento" />
         @empty
-            <div class="acrilico rounded-xl border border-zinc-200 px-4 py-10 text-center dark:border-white/10">
+            <div class="acrilico px-4 py-10 text-center">
                 <flux:text class="text-sm text-zinc-500">
                     @if ($this->totals['eventos'] === 0)
                         Todavía no hay cambios registrados en el catálogo. A partir de ahora, cada alta, baja, edición o

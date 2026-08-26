@@ -148,7 +148,7 @@ new #[Title('Usuarios')] class extends Component {
             @php
                 $appRoles = $user->accessAccount?->roles->where('application_id', $this->application->id) ?? collect();
             @endphp
-            <div class="acrilico rounded-xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="acrilico p-4">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div class="flex min-w-0 items-start gap-3">
                         <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
