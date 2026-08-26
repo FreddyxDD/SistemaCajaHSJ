@@ -211,7 +211,7 @@ new #[Title('Reportes de caja')] class extends Component {
                 @foreach ($this->byDay as $day)
                     <div class="flex h-full min-w-8 flex-1 flex-col items-center justify-end gap-1" title="{{ \Illuminate\Support\Carbon::parse($day->dia)->format('d/m/Y') }}: S/ {{ number_format($day->total, 2) }}">
                         <div class="flex w-full flex-1 items-end rounded-md bg-zinc-100 dark:bg-white/10">
-                            <div class="w-full rounded-md bg-accent" style="height: {{ max(4, round($day->total / $maxDay * 100)) }}%"></div>
+                            <div class="bar-grow w-full rounded-md bg-accent" style="height: {{ max(4, round($day->total / $maxDay * 100)) }}%"></div>
                         </div>
                         <flux:text class="text-[10px] text-zinc-500">{{ \Illuminate\Support\Carbon::parse($day->dia)->format('d/m') }}</flux:text>
                     </div>

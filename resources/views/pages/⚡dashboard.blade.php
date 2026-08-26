@@ -248,7 +248,7 @@ new #[Title('Panel')] class extends Component {
                     <div class="flex flex-1 flex-col items-center gap-2">
                         <flux:text class="text-xs text-zinc-500">S/ {{ number_format($day['total'], 0) }}</flux:text>
                         <div class="flex h-28 w-full items-end rounded-md bg-zinc-100 dark:bg-white/10">
-                            <div class="w-full rounded-md bg-accent transition-all" style="height: {{ $day['pct'] }}%"></div>
+                            <div class="bar-grow w-full rounded-md bg-accent" style="height: {{ $day['pct'] }}%"></div>
                         </div>
                         <flux:text class="text-xs text-zinc-500 capitalize">{{ $day['label'] }}</flux:text>
                     </div>
