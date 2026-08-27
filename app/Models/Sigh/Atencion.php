@@ -4,6 +4,7 @@ namespace App\Models\Sigh;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * Atenciones (SIGH): la cita/atencion que Admision registra para el paciente. Es lo
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $IdAtencion
  * @property int $IdPaciente
- * @property \Illuminate\Support\Carbon|null $FechaIngreso
+ * @property Carbon|null $FechaIngreso
  * @property string|null $HoraIngreso
  */
 class Atencion extends Model

@@ -125,12 +125,12 @@ class CashSessionReportController extends Controller
             ->leftJoin('Jerarquia_Forma_Pago_MH as pm', 'pm.cod_jerar_forma_pago', '=', 'd.cod_jerar_forma_pago')
             ->where('d.cod_aper_cierre_caja', $sessionCode)
             ->tap($filterByGroup)
-            ->selectRaw("
+            ->selectRaw('
                 SUM(CASE WHEN d.estado_doc = ? THEN 1 ELSE 0 END) as emitidos,
                 SUM(CASE WHEN d.estado_doc = ? THEN d.total_doc ELSE 0 END) as recaudado,
                 SUM(CASE WHEN d.estado_doc = ? THEN 1 ELSE 0 END) as anulados,
                 SUM(CASE WHEN d.estado_doc = ? THEN d.total_doc ELSE 0 END) as anulado_monto
-            ", [
+            ', [
                 ChargeDocument::ESTADO_EMITIDO,
                 ChargeDocument::ESTADO_EMITIDO,
                 ChargeDocument::ESTADO_ANULADO,

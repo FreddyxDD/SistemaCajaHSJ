@@ -3,6 +3,7 @@
 namespace App\Support\Caja;
 
 use App\Models\AuditEvent;
+use Illuminate\Support\Carbon;
 
 /**
  * Marcas de "esto cambió hace poco" para el catálogo.
@@ -22,7 +23,7 @@ class CatalogChanges
      *                                          los cambios de precio de otras formas de
      *                                          pago no se marcan, porque no afectan a
      *                                          lo que se esta cobrando o cotizando.
-     * @return array<string, array{tipo: string, etiqueta: string, detalle: string, fecha: \Illuminate\Support\Carbon, usuario: ?string, servicio: string}>
+     * @return array<string, array{tipo: string, etiqueta: string, detalle: string, fecha: Carbon, usuario: ?string, servicio: string}>
      */
     public static function recent(?string $paymentMethodName = null): array
     {
