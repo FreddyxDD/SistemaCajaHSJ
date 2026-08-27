@@ -26,9 +26,11 @@
 
                 @if ($u?->canDo('caja.view'))
                     <flux:sidebar.group :heading="__('Operación')" class="grid">
-                        <flux:sidebar.item icon="banknotes" :href="route('caja.sessions.index')" :current="request()->routeIs('caja.sessions.index')" wire:navigate>
-                            {{ __('Mi turno') }}
-                        </flux:sidebar.item>
+                        @if ($u?->canOpenCashSession())
+                            <flux:sidebar.item icon="banknotes" :href="route('caja.sessions.index')" :current="request()->routeIs('caja.sessions.index')" wire:navigate>
+                                {{ __('Mi turno') }}
+                            </flux:sidebar.item>
+                        @endif
                         @if ($u?->canDo('caja.charge.create'))
                             <flux:sidebar.item icon="plus-circle" :href="route('caja.charges.create')" :current="request()->routeIs('caja.charges.create')" wire:navigate>
                                 {{ __('Nuevo cobro') }}

@@ -94,7 +94,7 @@ new #[Title('Turno de caja')] class extends Component {
 
     public function open(): void
     {
-        abort_unless(Auth::user()->canDo('caja.session.open'), 403);
+        abort_unless(Auth::user()->canOpenCashSession(), 403, 'Solo los cajeros pueden abrir turnos de caja.');
 
         // Regla del hospital: un turno a la vez. Sin esto quedan turnos zombis
         // abiertos y el arqueo del cajero central no cuadra.
@@ -272,7 +272,7 @@ new #[Title('Turno de caja')] class extends Component {
                     El reporte de un turno abierto sale marcado como provisional.
                 </flux:text>
             </flux:card>
-        @else
+        @elseif (Auth::user()->canOpenCashSession())
             <flux:card class="space-y-4">
                 <div>
                     <flux:subheading>Turno actual</flux:subheading>

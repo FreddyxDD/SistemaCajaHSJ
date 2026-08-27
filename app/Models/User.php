@@ -81,6 +81,17 @@ class User extends Authenticatable implements PasskeyUser
         return $this->hasRole('administrador', $application) || $this->hasPermission($permission, $application);
     }
 
+    /**
+     * Abrir una caja es una capacidad operativa, no administrativa. El rol
+     * administrador conserva su pase global para supervisar la aplicacion, pero no
+     * debe poder iniciar un turno ni operar como cajero por ese solo hecho.
+     */
+    public function canOpenCashSession(string $application = 'gestioncajahsj'): bool
+    {
+        return $this->hasRole('cajero', $application)
+            || $this->hasRole('cajero_central', $application);
+    }
+
     public function hasPermission(string $permission, string $application = 'gestioncajahsj'): bool
     {
         return $this->accessAccount()

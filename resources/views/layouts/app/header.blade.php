@@ -18,7 +18,7 @@
             // "Turno" agrupa la operacion diaria del cajero: su propio turno, el cobro
             // nuevo y los comprobantes que emitio.
             $turnoChildren = array_values(array_filter([
-                $u?->canDo('caja.view')
+                $u?->canOpenCashSession()
                     ? ['clock', route('caja.sessions.index'), 'caja.sessions.index', __('Mi turno'), null, []]
                     : null,
                 $u?->canDo('caja.charge.create')

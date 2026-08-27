@@ -74,7 +74,12 @@ class AccessControlSeeder extends Seeder
         // El cajero NO puede anular por si mismo: solo solicita. La aprobacion es
         // exclusiva del Jefe de Economia y del Cajero central.
         $matrix = [
-            'administrador' => $permissions->pluck('code')->all(),
+            // La apertura es exclusivamente operativa: ni siquiera el administrador
+            // la recibe por matriz. La accion aplica ademas una regla explicita de rol
+            // porque el administrador tiene pase global en canDo().
+            'administrador' => $permissions->pluck('code')->reject(
+                fn (string $permission) => $permission === 'caja.session.open',
+            )->all(),
             'jefe_economia' => [
                 'caja.view', 'caja.cashiers.view', 'caja.void.request', 'caja.void.approve',
                 'caja.registers.manage', 'caja.catalog.manage', 'caja.catalog.audit', 'caja.prices.view', 'reports.view',
@@ -90,7 +95,7 @@ class AccessControlSeeder extends Seeder
                 'caja.charge.create', 'caja.void.request', 'caja.prices.view',
             ],
             'supervisor_caja' => [
-                'caja.view', 'caja.session.open', 'caja.session.close', 'caja.charge.create',
+                'caja.view', 'caja.session.close', 'caja.charge.create',
                 'caja.cashiers.view', 'caja.void.request',
                 'caja.registers.manage', 'caja.catalog.manage', 'caja.catalog.audit', 'caja.prices.view', 'reports.view',
             ],
