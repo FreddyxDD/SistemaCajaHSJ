@@ -57,6 +57,7 @@ class User extends Authenticatable implements PasskeyUser
             : $initials;
     }
 
+    /** @return HasOne<AccessAccount, $this> */
     public function accessAccount(): HasOne
     {
         return $this->hasOne(AccessAccount::class);

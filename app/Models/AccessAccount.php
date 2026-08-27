@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+/**
+ * @property string $username
+ * @property bool $must_change_password
+ */
 class AccessAccount extends Model
 {
     use UsesIdentityConnection;
@@ -27,6 +31,7 @@ class AccessAccount extends Model
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsToMany<AccessRole, $this> */
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(AccessRole::class, 'access_account_roles', 'account_id', 'role_id')

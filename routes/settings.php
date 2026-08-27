@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\TemporaryPasswordController;
 use App\Http\Controllers\Settings\CajaEnvironmentController;
 use Illuminate\Support\Facades\Route;
 
@@ -7,6 +8,11 @@ Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 
     Route::livewire('settings/profile', 'pages::settings.profile')->name('profile.edit');
+
+    Route::get('password/temporary', [TemporaryPasswordController::class, 'edit'])
+        ->name('password.temporary.edit');
+    Route::put('password/temporary', [TemporaryPasswordController::class, 'update'])
+        ->name('password.temporary.update');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
