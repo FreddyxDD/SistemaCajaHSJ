@@ -9,6 +9,8 @@ use App\Models\Caja\ItemCategory;
 use App\Models\Caja\LegacyHistoriaClinica;
 use App\Models\Caja\PaymentMethod;
 use App\Models\Caja\Price;
+use App\Models\FavoriteItem;
+use App\Models\ServiceBundle;
 use App\Models\Sigh\Atencion;
 use App\Support\Caja\CatalogChanges;
 use App\Models\Sigh\Patient;
@@ -61,6 +63,16 @@ new #[Title('Nuevo cobro')] class extends Component {
     public string $itemQuery = '';
 
     public ?string $categoryFilter = null;
+
+    /** Limita el catalogo a los servicios que el cajero marco como favoritos. */
+    public bool $onlyFavorites = false;
+
+    /** Resumen de lo que paso al cargar o guardar un combo. */
+    public ?array $bundleNotice = null;
+
+    public bool $showBundleForm = false;
+
+    public string $newBundleName = '';
 
     /** 'buscar' = buscador libre; 'hoja' = formato de solicitud tipo el papel de Admision. */
     public string $catalogMode = 'buscar';
@@ -258,6 +270,19 @@ new #[Title('Nuevo cobro')] class extends Component {
 
         if ($this->categoryFilter) {
             $query->whereHas('billableItem', fn ($q) => $q->where('grupo', $this->categoryFilter));
+        }
+
+        // Los favoritos viven en la base propia (HSJ_Caja) y el catalogo en el legado
+        // (SISGESH_BD): son instancias distintas, asi que no hay join posible. Se
+        // filtra con la lista de codigos ya resuelta.
+        if ($this->onlyFavorites) {
+            $favoritos = $this->favoriteCodes;
+
+            if ($favoritos === []) {
+                return collect();
+            }
+
+            $query->whereIn('cod_nomen_caja', $favoritos);
         }
 
         // "Mas solicitados": frecuencia real segun el historial de ventas (Detalle +
@@ -620,6 +645,165 @@ new #[Title('Nuevo cobro')] class extends Component {
             'cantidad' => 1,
             'precio' => (float) $price->precio,
         ];
+    }
+
+    /* ---------------------------------------------------------------------
+     | Favoritos y combos
+     |
+     | Los dos guardan `cod_nomen_caja` (el servicio), nunca `cod_precio`: la tarifa
+     | depende de la forma de pago y cambia cuando Costos la ajusta. El precio se
+     | resuelve al usarlos, con la forma de pago elegida en ese momento.
+     --------------------------------------------------------------------- */
+
+    /** @return array<int, string> cod_nomen_caja marcados por este cajero */
+    #[Computed]
+    public function favoriteCodes(): array
+    {
+        return FavoriteItem::query()
+            ->forUser(Auth::id())
+            ->pluck('cod_nomen_caja')
+            ->all();
+    }
+
+    public function toggleFavorite(string $codNomenCaja): void
+    {
+        $favorito = FavoriteItem::query()
+            ->forUser(Auth::id())
+            ->where('cod_nomen_caja', $codNomenCaja)
+            ->first();
+
+        if ($favorito) {
+            $favorito->delete();
+        } else {
+            FavoriteItem::query()->create([
+                'user_id' => Auth::id(),
+                'cod_nomen_caja' => $codNomenCaja,
+            ]);
+        }
+
+        unset($this->favoriteCodes, $this->itemResults);
+    }
+
+    #[Computed]
+    public function bundles()
+    {
+        return ServiceBundle::query()
+            ->forUser(Auth::id())
+            ->withCount('items')
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Carga un combo en el carrito. Los servicios que no tengan precio en la forma de
+     * pago elegida no se agregan y se informan: es el mismo criterio del re-tarifado
+     * al cambiar de forma de pago, y el cajero tiene que enterarse antes de cobrar.
+     */
+    public function loadBundle(int $bundleId): void
+    {
+        $bundle = ServiceBundle::query()->forUser(Auth::id())->with('items')->findOrFail($bundleId);
+
+        if (! $this->paymentMethodCode) {
+            $this->addError('cart', 'Elige primero una forma de pago para cargar el combo con el precio correcto.');
+
+            return;
+        }
+
+        $precios = Price::query()
+            ->where('cod_jerar_forma_pago', $this->paymentMethodCode)
+            ->whereIn('cod_nomen_caja', $bundle->items->pluck('cod_nomen_caja'))
+            ->with('billableItem')
+            ->get()
+            ->keyBy('cod_nomen_caja');
+
+        $agregados = 0;
+        $sinPrecio = [];
+
+        foreach ($bundle->items as $item) {
+            $precio = $precios->get($item->cod_nomen_caja);
+
+            if (! $precio) {
+                $sinPrecio[] = $item->cod_nomen_caja;
+
+                continue;
+            }
+
+            for ($i = 0; $i < max(1, $item->quantity); $i++) {
+                $this->addItem($precio->cod_precio);
+            }
+
+            $agregados++;
+        }
+
+        $this->bundleNotice = [
+            'nombre' => $bundle->name,
+            'agregados' => $agregados,
+            'sin_precio' => $sinPrecio,
+        ];
+    }
+
+    public function dismissBundleNotice(): void
+    {
+        $this->bundleNotice = null;
+    }
+
+    /** Guarda el carrito actual como combo reutilizable. */
+    public function saveBundle(): void
+    {
+        $this->validate(
+            ['newBundleName' => ['required', 'string', 'min:3', 'max:80']],
+            [
+                'newBundleName.required' => 'Ponle un nombre al combo.',
+                'newBundleName.min' => 'El nombre debe tener al menos 3 caracteres.',
+            ],
+        );
+
+        if ($this->cart === []) {
+            $this->addError('newBundleName', 'Agrega servicios al carrito antes de guardar el combo.');
+
+            return;
+        }
+
+        $existente = ServiceBundle::query()
+            ->forUser(Auth::id())
+            ->where('name', trim($this->newBundleName))
+            ->first();
+
+        if ($existente) {
+            $this->addError('newBundleName', 'Ya tienes un combo con ese nombre.');
+
+            return;
+        }
+
+        $bundle = ServiceBundle::query()->create([
+            'user_id' => Auth::id(),
+            'name' => trim($this->newBundleName),
+        ]);
+
+        foreach ($this->cart as $line) {
+            $bundle->items()->create([
+                'cod_nomen_caja' => $line['cod_nomen_caja'],
+                'quantity' => (int) $line['cantidad'],
+            ]);
+        }
+
+        $this->newBundleName = '';
+        $this->showBundleForm = false;
+        unset($this->bundles);
+
+        $this->bundleNotice = [
+            'nombre' => $bundle->name,
+            'guardado' => true,
+            'agregados' => count($this->cart),
+            'sin_precio' => [],
+        ];
+    }
+
+    public function deleteBundle(int $bundleId): void
+    {
+        ServiceBundle::query()->forUser(Auth::id())->findOrFail($bundleId)->delete();
+
+        unset($this->bundles);
     }
 
     public function updateQuantity(int $index, int $cantidad): void
@@ -1208,42 +1392,85 @@ new #[Title('Nuevo cobro')] class extends Component {
                         </div>
                     @endif
 
-                    <flux:input wire:model.live.debounce.400ms="itemQuery" placeholder="Buscar dentro de esta categoría (opcional)..." icon="magnifying-glass" />
+                    <flux:input
+                        wire:model.live.debounce.400ms="itemQuery"
+                        placeholder="Nombre o código del servicio (por ejemplo CJ96372)..."
+                        icon="magnifying-glass"
+                        clearable
+                    />
 
-                    <flux:text class="text-xs text-zinc-500">Ordenado por lo más solicitado según el historial de ventas. Click para agregar, click de nuevo para quitar.</flux:text>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            wire:click="$toggle('onlyFavorites')"
+                            class="flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium {{ $onlyFavorites ? 'border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300' : 'border-zinc-300 hover:border-accent dark:border-zinc-600' }}"
+                        >
+                            <flux:icon.star variant="{{ $onlyFavorites ? 'solid' : 'outline' }}" class="size-3.5" />
+                            Favoritos
+                            <span class="opacity-60">{{ count($this->favoriteCodes) }}</span>
+                        </button>
+
+                        <flux:text class="text-xs text-zinc-500">
+                            Ordenado por lo más solicitado. Click para agregar, click de nuevo para quitar.
+                        </flux:text>
+                    </div>
 
                     <div class="max-h-[60vh] divide-y overflow-y-auto rounded-lg border lg:max-h-96 dark:divide-zinc-700 dark:border-zinc-700">
                         @forelse ($this->itemResults as $price)
                             @php
                                 $isSelected = in_array($price->cod_precio, $this->selectedPrices, true);
                                 $cambio = $this->recentCatalogChanges[$price->cod_nomen_caja] ?? null;
+                                $esFavorito = in_array($price->cod_nomen_caja, $this->favoriteCodes, true);
                             @endphp
-                            <button
-                                type="button"
-                                wire:click="toggleItem('{{ $price->cod_precio }}')"
-                                class="flex w-full items-center justify-between gap-4 px-3 py-2.5 text-left max-sm:min-h-11 {{ $isSelected ? 'bg-accent/10' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}"
-                            >
-                                <span class="min-w-0 flex-1">
-                                    <span class="text-sm {{ $isSelected ? 'font-medium text-accent' : '' }}">
-                                        {{ $price->billableItem?->descripcion_nomen_tipo }}
-                                    </span>
+                            {{-- La estrella es un boton aparte del de agregar: no pueden
+                                 anidarse dos <button>, y marcar favorito no debe meter
+                                 el servicio en el carrito. --}}
+                            <div class="flex w-full items-center gap-2 px-3 {{ $isSelected ? 'bg-accent/10' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}">
+                                <button
+                                    type="button"
+                                    wire:click="toggleFavorite('{{ $price->cod_nomen_caja }}')"
+                                    class="shrink-0 p-1 max-sm:min-h-11"
+                                    title="{{ $esFavorito ? 'Quitar de favoritos' : 'Marcar como favorito' }}"
+                                    aria-label="{{ $esFavorito ? 'Quitar de favoritos' : 'Marcar como favorito' }}"
+                                >
+                                    <flux:icon.star
+                                        variant="{{ $esFavorito ? 'solid' : 'outline' }}"
+                                        class="size-4 {{ $esFavorito ? 'text-amber-500' : 'text-zinc-300 hover:text-amber-500 dark:text-zinc-600' }}"
+                                    />
+                                </button>
 
-                                    @if ($cambio)
-                                        <span class="mt-1 flex flex-wrap items-center gap-2">
-                                            <x-catalog-change-mark :change="$cambio" />
-                                            <span class="text-xs text-zinc-500">{{ $cambio['detalle'] }}</span>
+                                <button
+                                    type="button"
+                                    wire:click="toggleItem('{{ $price->cod_precio }}')"
+                                    class="flex min-w-0 flex-1 items-center justify-between gap-4 py-2.5 text-left max-sm:min-h-11"
+                                >
+                                    <span class="min-w-0 flex-1">
+                                        <span class="text-sm {{ $isSelected ? 'font-medium text-accent' : '' }}">
+                                            {{ $price->billableItem?->descripcion_nomen_tipo }}
                                         </span>
-                                    @endif
-                                </span>
-                                <span class="flex shrink-0 items-center gap-2">
-                                    <span class="font-medium whitespace-nowrap">S/ {{ number_format($price->precio, 2) }}</span>
-                                    @if ($isSelected)
-                                        <flux:icon.check-circle class="size-5 text-accent" />
-                                    @else
-                                        <flux:icon.plus-circle class="size-5 text-zinc-400" />
-                                    @endif
-                                </span>
-                            </button>
+
+                                        {{-- El codigo, para el cajero que ya lo sabe de memoria. --}}
+                                        @if (trim((string) $price->billableItem?->nomen_caja) !== '')
+                                            <span class="ms-1 font-mono text-xs text-zinc-400">{{ trim($price->billableItem->nomen_caja) }}</span>
+                                        @endif
+
+                                        @if ($cambio)
+                                            <span class="mt-1 flex flex-wrap items-center gap-2">
+                                                <x-catalog-change-mark :change="$cambio" />
+                                                <span class="text-xs text-zinc-500">{{ $cambio['detalle'] }}</span>
+                                            </span>
+                                        @endif
+                                    </span>
+                                    <span class="flex shrink-0 items-center gap-2">
+                                        <span class="font-medium whitespace-nowrap">S/ {{ number_format($price->precio, 2) }}</span>
+                                        @if ($isSelected)
+                                            <flux:icon.check-circle class="size-5 text-accent" />
+                                        @else
+                                            <flux:icon.plus-circle class="size-5 text-zinc-400" />
+                                        @endif
+                                    </span>
+                                </button>
+                            </div>
                         @empty
                             <div class="px-3 py-4 text-sm text-zinc-500">
                                 No hay servicios con precio para esta forma de pago{{ $itemQuery !== '' ? ' que coincidan con "'.$itemQuery.'"' : '' }}.
@@ -1256,7 +1483,89 @@ new #[Title('Nuevo cobro')] class extends Component {
         </div>
 
         {{-- Vista previa de la venta, fija a la derecha en escritorio --}}
-        <div class="lg:sticky lg:top-6 lg:h-fit">
+        <div class="space-y-4 lg:sticky lg:top-6 lg:h-fit">
+            {{-- Combos: listas largas que se repiten. Se cargan enteras y despues el
+                 cajero quita o agrega lo que cambie en ese paciente. --}}
+            <flux:card class="space-y-3 p-4!">
+                <div class="flex items-center justify-between gap-2">
+                    <flux:subheading>Mis combos</flux:subheading>
+                    <flux:button
+                        wire:click="$toggle('showBundleForm')"
+                        size="xs"
+                        variant="ghost"
+                        icon="{{ $showBundleForm ? 'x-mark' : 'bookmark' }}"
+                    >
+                        {{ $showBundleForm ? 'Cancelar' : 'Guardar actual' }}
+                    </flux:button>
+                </div>
+
+                @if ($bundleNotice)
+                    <div class="flex items-start gap-2 rounded-lg border border-accent/30 bg-accent/10 p-2">
+                        <flux:icon.information-circle class="mt-0.5 size-4 shrink-0 text-accent" />
+                        <div class="min-w-0 flex-1">
+                            <flux:text class="text-xs">
+                                @if ($bundleNotice['guardado'] ?? false)
+                                    Combo <b>{{ $bundleNotice['nombre'] }}</b> guardado con
+                                    {{ $bundleNotice['agregados'] }} {{ Str::plural('servicio', $bundleNotice['agregados']) }}.
+                                @else
+                                    Se agregaron {{ $bundleNotice['agregados'] }}
+                                    {{ Str::plural('servicio', $bundleNotice['agregados']) }} de <b>{{ $bundleNotice['nombre'] }}</b>.
+                                @endif
+                            </flux:text>
+
+                            @if ($bundleNotice['sin_precio'] !== [])
+                                <flux:text class="mt-1 block text-xs text-amber-700 dark:text-amber-300">
+                                    {{ count($bundleNotice['sin_precio']) }}
+                                    {{ Str::plural('servicio', count($bundleNotice['sin_precio'])) }} del combo no
+                                    {{ count($bundleNotice['sin_precio']) === 1 ? 'tiene precio' : 'tienen precio' }}
+                                    con esta forma de pago y no se {{ count($bundleNotice['sin_precio']) === 1 ? 'agregó' : 'agregaron' }}.
+                                </flux:text>
+                            @endif
+                        </div>
+                        <flux:button wire:click="dismissBundleNotice" size="xs" variant="ghost" icon="x-mark" square />
+                    </div>
+                @endif
+
+                @if ($showBundleForm)
+                    <div class="space-y-2">
+                        <flux:input
+                            wire:model="newBundleName"
+                            placeholder="Nombre del combo (ej. Perfil prequirúrgico)"
+                            size="sm"
+                        />
+                        @error('newBundleName') <flux:text class="text-xs text-red-600">{{ $message }}</flux:text> @enderror
+                        <flux:button wire:click="saveBundle" size="xs" variant="primary" class="w-full">
+                            Guardar los {{ $this->cartCount }} {{ Str::plural('ítem', $this->cartCount) }} del carrito
+                        </flux:button>
+                    </div>
+                @endif
+
+                @forelse ($this->bundles as $bundle)
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            wire:click="loadBundle({{ $bundle->id }})"
+                            class="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-lg border border-zinc-200 px-2 py-1.5 text-left text-sm hover:border-accent max-sm:min-h-11 dark:border-white/10"
+                        >
+                            <span class="min-w-0 flex-1 truncate">{{ $bundle->name }}</span>
+                            <span class="shrink-0 text-xs text-zinc-500">{{ $bundle->items_count }}</span>
+                        </button>
+                        <flux:button
+                            wire:click="deleteBundle({{ $bundle->id }})"
+                            wire:confirm="¿Eliminar el combo {{ $bundle->name }}?"
+                            size="xs"
+                            variant="ghost"
+                            icon="trash"
+                            square
+                        />
+                    </div>
+                @empty
+                    <flux:text class="text-xs text-zinc-500">
+                        Aún no guardas combos. Arma un cobro en el carrito y pulsa «Guardar actual» para reutilizarlo.
+                    </flux:text>
+                @endforelse
+            </flux:card>
+
             <flux:card class="space-y-4 p-4!">
                 <div class="flex items-center justify-between">
                     <flux:subheading>4. Vista previa de la venta</flux:subheading>
