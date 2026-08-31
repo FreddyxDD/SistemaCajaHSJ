@@ -3,6 +3,7 @@
 use App\Http\Middleware\ApplyCajaDatabaseEnvironment;
 use App\Http\Middleware\EnsurePasswordIsChanged;
 use App\Http\Middleware\EnsureUserHasPermission;
+use App\Http\Middleware\RecordPageView;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->appendToGroup('web', ApplyCajaDatabaseEnvironment::class);
         $middleware->appendToGroup('web', EnsurePasswordIsChanged::class);
+
+        // Rastro de navegacion: se escribe en terminate(), despues de responder.
+        $middleware->appendToGroup('web', RecordPageView::class);
 
         $middleware->alias([
             'permission' => EnsureUserHasPermission::class,

@@ -42,6 +42,9 @@
                 $u?->canDo('caja.catalog.audit')
                     ? ['clipboard-document-list', route('admin.catalog.audit'), 'admin.catalog.audit', __('Auditoría del catálogo'), null, []]
                     : null,
+                $u?->canDo('audit.access.view')
+                    ? ['finger-print', route('admin.access-audit'), 'admin.access-audit', __('Auditoría de accesos'), null, []]
+                    : null,
             ]));
 
             $navItems = array_values(array_filter([

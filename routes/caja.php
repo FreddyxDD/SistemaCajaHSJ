@@ -72,4 +72,9 @@ Route::middleware(['auth', 'verified'])->prefix('administracion')->name('admin.'
     Route::livewire('catalogo/auditoria', 'pages::admin.catalog-audit')
         ->middleware('permission:caja.catalog.audit')
         ->name('catalog.audit');
+
+    // Auditoria de accesos: quien entra, desde donde y que consulta.
+    Route::livewire('accesos', 'pages::admin.access-audit')
+        ->middleware('permission:audit.access.view')
+        ->name('access-audit');
 });
