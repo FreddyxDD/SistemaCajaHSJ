@@ -2,6 +2,7 @@
 
 use App\Models\Caja\ChargeDocument;
 use App\Models\VoidRequest;
+use App\Support\Caja\LegacyIdGenerator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -18,6 +19,8 @@ new #[Title('Solicitudes de anulación')] class extends Component {
 
     public string $reviewNotes = '';
 
+    public string $historySearch = '';
+
     #[Computed]
     public function canApprove(): bool
     {
@@ -33,6 +36,7 @@ new #[Title('Solicitudes de anulación')] class extends Component {
             'pending' => VoidRequest::query()->where('status', VoidRequest::STATUS_PENDING)->count(),
             'approved' => VoidRequest::query()->where('status', VoidRequest::STATUS_APPROVED)->count(),
             'rejected' => VoidRequest::query()->where('status', VoidRequest::STATUS_REJECTED)->count(),
+            'history' => ChargeDocument::query()->where('estado_doc', ChargeDocument::ESTADO_ANULADO)->count(),
         ];
     }
 
@@ -47,11 +51,78 @@ new #[Title('Solicitudes de anulación')] class extends Component {
             ->paginate(15);
     }
 
+    /**
+     * Historial efectivo de SISGESH_BD. Incluye anulaciones realizadas por esta app
+     * y por cualquier cliente legado; la coincidencia con void_requests determina
+     * el origen sin copiar ni alterar registros historicos.
+     */
+    #[Computed]
+    public function voidHistory()
+    {
+        $documents = DB::connection('caja')
+            ->table('Cabecera_documento_MH as d')
+            ->leftJoin('Usuario as emisor', 'emisor.cod_usu', '=', 'd.cod_usu')
+            ->leftJoin('Usuario as anulador', 'anulador.cod_usu', '=', 'd.cod_usu_anu')
+            ->leftJoin('Motivo_Anulacion_MH as motivo', 'motivo.cod_motiv_anu', '=', 'd.cod_motiv_anu')
+            ->where('d.estado_doc', ChargeDocument::ESTADO_ANULADO)
+            ->when(trim($this->historySearch) !== '', function ($query): void {
+                $search = '%'.trim($this->historySearch).'%';
+                $query->where(function ($nested) use ($search): void {
+                    $nested->where('d.num_documento', 'like', $search)
+                        ->orWhere('d.cliente', 'like', $search)
+                        ->orWhere('emisor.nom_usu', 'like', $search)
+                        ->orWhere('anulador.nom_usu', 'like', $search)
+                        ->orWhere('motivo.descripcion_anulacion', 'like', $search);
+                });
+            })
+            ->select([
+                'd.id_documento',
+                'd.serie_documento',
+                'd.num_documento',
+                'd.cliente',
+                'd.total_doc',
+                'd.fecha_actu',
+                'd.hora_actu',
+                'd.fecha_actu_anu',
+                'd.hora_actu_anu',
+                'd.cod_aper_cierre_caja',
+                'd.cod_motiv_anu',
+                'd.cod_usu_anu',
+                'd.nom_pc_anu',
+                'emisor.nom_usu as emisor_nombre',
+                'anulador.nom_usu as anulador_nombre',
+                'motivo.descripcion_anulacion as motivo_nombre',
+            ])
+            // La base funciona con un nivel de compatibilidad SQL Server antiguo;
+            // el correlativo es monotonicamente creciente y ordena sin convertir
+            // las fechas varchar DD/MM/YYYY.
+            ->orderByDesc('d.id_documento')
+            ->paginate(15, ['*'], 'historyPage');
+
+        $applicationRequests = VoidRequest::query()
+            ->where('status', VoidRequest::STATUS_APPROVED)
+            ->whereIn('document_id', collect($documents->items())->pluck('id_documento'))
+            ->get()
+            ->keyBy('document_id');
+
+        foreach ($documents->items() as $document) {
+            $document->application_request = $applicationRequests->get($document->id_documento);
+        }
+
+        return $documents;
+    }
+
     public function setStatusFilter(string $status): void
     {
         $this->statusFilter = $status;
         $this->reviewingId = null;
         $this->resetPage();
+        $this->resetPage('historyPage');
+    }
+
+    public function updatedHistorySearch(): void
+    {
+        $this->resetPage('historyPage');
     }
 
     public function startReview(int $id): void
@@ -64,15 +135,20 @@ new #[Title('Solicitudes de anulación')] class extends Component {
     public function approve(int $id): void
     {
         $request = $this->authorizeReview($id);
+        $legacyReviewerCode = LegacyIdGenerator::legacyUserCode(Auth::user());
 
         // La anulacion real en el esquema legado ocurre SOLO aqui, al aprobarse:
         // hasta este momento el comprobante sigue vigente en Cabecera_documento_MH.
-        DB::connection('caja')->transaction(function () use ($request) {
+        DB::connection('caja')->transaction(function () use ($request, $legacyReviewerCode) {
             ChargeDocument::query()
                 ->where('id_documento', $request->document_id)
                 ->update([
                     'estado_doc' => ChargeDocument::ESTADO_ANULADO,
                     'cod_motiv_anu' => $request->void_reason_code,
+                    'fecha_actu_anu' => now()->format('d/m/Y'),
+                    'hora_actu_anu' => now()->format('H:i:s'),
+                    'cod_usu_anu' => $legacyReviewerCode,
+                    'nom_pc_anu' => 'GESTIONCAJAHSJ',
                 ]);
         });
 
@@ -162,7 +238,8 @@ new #[Title('Solicitudes de anulación')] class extends Component {
                 'pending' => ['Pendientes', $this->counts['pending'], 'amber'],
                 'approved' => ['Aprobadas', $this->counts['approved'], 'green'],
                 'rejected' => ['Rechazadas', $this->counts['rejected'], 'red'],
-                'all' => ['Todas', array_sum($this->counts), 'zinc'],
+                'all' => ['Todas las solicitudes', $this->counts['pending'] + $this->counts['approved'] + $this->counts['rejected'], 'zinc'],
+                'history' => ['Historial real', $this->counts['history'], 'blue'],
             ];
         @endphp
         @foreach ($filters as $key => [$label, $count, $color])
@@ -177,6 +254,101 @@ new #[Title('Solicitudes de anulación')] class extends Component {
         @endforeach
     </div>
 
+    @if ($statusFilter === 'history')
+        <div class="rounded-xl border border-blue-200 bg-blue-50/70 p-4 dark:border-blue-500/30 dark:bg-blue-400/10">
+            <div class="flex items-start gap-3">
+                <flux:icon.information-circle class="mt-0.5 size-5 shrink-0 text-blue-600 dark:text-blue-400" />
+                <flux:text class="text-sm text-blue-900 dark:text-blue-200">
+                    Este historial proviene directamente de <strong>SISGESH_BD</strong>. “CAJA nueva” identifica anulaciones aprobadas aquí;
+                    “Sistema anterior/externo” identifica anulaciones sin una aprobación registrada por esta aplicación.
+                </flux:text>
+            </div>
+        </div>
+
+        <flux:input
+            wire:model.live.debounce.350ms="historySearch"
+            icon="magnifying-glass"
+            placeholder="Buscar comprobante, paciente, cajero, anulador o motivo..."
+            clearable
+        />
+
+        <div class="space-y-3">
+            @forelse ($this->voidHistory as $doc)
+                @php
+                    $appRequest = $doc->application_request;
+                    $fromApplication = $appRequest !== null;
+                    $legacyVoidDate = trim(($doc->fecha_actu_anu ?? '').' '.($doc->hora_actu_anu ?? ''));
+                    $voidedBy = $fromApplication
+                        ? $appRequest->reviewed_by_name
+                        : ($doc->anulador_nombre ?: ($doc->cod_usu_anu ?: 'Usuario no registrado'));
+                @endphp
+
+                <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div class="min-w-0 space-y-2">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <a href="{{ route('caja.charges.show', $doc->id_documento) }}" wire:navigate class="font-semibold hover:underline">
+                                    {{ $doc->num_documento }}
+                                </a>
+                                <flux:badge :color="$fromApplication ? 'green' : 'zinc'" size="sm">
+                                    {{ $fromApplication ? 'CAJA nueva' : 'Sistema anterior/externo' }}
+                                </flux:badge>
+                                <flux:badge color="red" size="sm">Anulado</flux:badge>
+                                <flux:text class="font-semibold">S/ {{ number_format((float) $doc->total_doc, 2) }}</flux:text>
+                            </div>
+
+                            <div class="space-y-1 text-sm text-zinc-500">
+                                <div>
+                                    <span class="font-medium text-zinc-700 dark:text-zinc-300">Paciente/cliente:</span>
+                                    {{ $doc->cliente ?: 'Sin nombre registrado' }}
+                                </div>
+                                <div>
+                                    <span class="font-medium text-zinc-700 dark:text-zinc-300">Motivo:</span>
+                                    {{ $doc->motivo_nombre ?: $doc->cod_motiv_anu ?: 'Sin motivo registrado' }}
+                                </div>
+                                <div class="flex flex-wrap items-center gap-x-2 text-xs">
+                                    <flux:icon.user class="size-3.5" />
+                                    <span>Emitió {{ $doc->emisor_nombre ?: 'Usuario no registrado' }}</span>
+                                    @if ($doc->cod_aper_cierre_caja)
+                                        <span>·</span>
+                                        <span>Turno {{ $doc->cod_aper_cierre_caja }}</span>
+                                    @endif
+                                </div>
+                                <div class="flex flex-wrap items-center gap-x-2 text-xs">
+                                    <flux:icon.shield-check class="size-3.5" />
+                                    <span>Anuló {{ $voidedBy }}</span>
+                                    <span>·</span>
+                                    @if ($fromApplication && $appRequest->reviewed_at)
+                                        <span>{{ $appRequest->reviewed_at->format('d/m/Y H:i') }}</span>
+                                    @elseif ($legacyVoidDate !== '')
+                                        <span>{{ $legacyVoidDate }}</span>
+                                    @else
+                                        <span>Fecha de anulación no registrada</span>
+                                    @endif
+                                    @if (! $fromApplication && $doc->nom_pc_anu)
+                                        <span>·</span>
+                                        <span>Equipo {{ $doc->nom_pc_anu }}</span>
+                                    @endif
+                                </div>
+                                @if ($fromApplication)
+                                    <div class="text-xs">
+                                        Solicitó {{ $appRequest->requested_by_name }} el {{ $appRequest->requested_at?->format('d/m/Y H:i') }}.
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-300 px-4 py-16 text-center dark:border-zinc-700">
+                    <flux:icon.inbox class="size-8 text-zinc-300 dark:text-zinc-600" />
+                    <flux:text class="mt-3 text-sm text-zinc-500">No se encontraron anulaciones en el sistema institucional.</flux:text>
+                </div>
+            @endforelse
+        </div>
+
+        {{ $this->voidHistory->links() }}
+    @else
     <div class="space-y-3">
         @forelse ($this->requests as $req)
             <div class="rounded-xl border {{ $req->isPending() ? 'border-amber-200 dark:border-amber-500/30' : 'border-zinc-200 dark:border-white/10' }} bg-white p-4 dark:bg-white/5">
@@ -258,4 +430,5 @@ new #[Title('Solicitudes de anulación')] class extends Component {
     </div>
 
     {{ $this->requests->links() }}
+    @endif
 </section>
