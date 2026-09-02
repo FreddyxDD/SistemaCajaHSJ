@@ -128,6 +128,7 @@
     <div class="par"><span>Desde:</span><span>{{ $desde->format('d/m/Y') }}</span></div>
     <div class="par"><span>Hasta:</span><span>{{ $hasta->format('d/m/Y') }}</span></div>
     <div class="par"><span>Doc.:</span><span>C (Cancelado)</span></div>
+    <div class="par"><span>Alcance:</span><span>{{ $alcanceEtiqueta }}</span></div>
     <div class="par"><span>Comprob.:</span><span>{{ $comprobantes['emitidos'] }} emit. / {{ $comprobantes['anulados'] }} anul.</span></div>
 
     @forelse ($formasPago as $forma)
@@ -164,6 +165,16 @@
     <div class="total"><span>TOTAL VENTAS</span><span>{{ number_format($totalVentas, 2) }}</span></div>
     <div class="total"><span>DEPÓSITOS PACIENTE</span><span>{{ number_format($depositos, 2) }}</span></div>
     <div class="total general"><span>TOTAL GENERAL</span><span>{{ number_format($totalGeneral, 2) }}</span></div>
+
+    @if ($excluido->isNotEmpty())
+        <hr>
+        <div style="font-size:8.5px">
+            <div class="fuerte">NO INCLUIDO (cobertura, no efectivo)</div>
+            @foreach ($excluido as $e)
+                <div class="total" style="font-size:8.5px"><span>{{ $e->forma }}</span><span>{{ number_format($e->total, 2) }}</span></div>
+            @endforeach
+        </div>
+    @endif
 
     <div class="firma">
         <div class="linea"></div>

@@ -139,12 +139,32 @@
 
         .vacio { padding: 24px 0; text-align: center; font-size: 11px; }
 
-        .barra { width: 190mm; margin: 12px auto 0; display: flex; gap: 8px; justify-content: flex-end; }
+        .barra { width: 190mm; margin: 12px auto 0; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
         .barra button, .barra a {
-            font: inherit; padding: 7px 14px; border: 1px solid #111; border-radius: 5px;
+            font: inherit; font-size: 12px; padding: 6px 11px; border: 1px solid #111; border-radius: 5px;
             background: #111; color: #fff; cursor: pointer; text-decoration: none;
         }
-        .barra a.alt { background: #fff; color: #111; }
+        .barra a.alt { background: #fff; color: #111; border-color: #bbb; }
+        .barra a.alt.activo { background: #111; color: #fff; border-color: #111; }
+        .barra .etiqueta { font-size: 11px; color: #444; }
+        .barra .separador { flex: 1; }
+
+        .alcance {
+            margin: 0 0 12px;
+            padding: 5px 9px;
+            background: #f0f1f3;
+            border-left: 3px solid #000;
+            font-size: 10.5px;
+        }
+
+        .excluido {
+            margin-top: 14px;
+            padding: 8px 10px;
+            border: 1px dashed #999;
+            font-size: 9.5px;
+        }
+        .excluido .t { font-weight: bold; margin-bottom: 3px; }
+        .excluido .fila { display: flex; justify-content: space-between; gap: 10px; }
 
         @media print {
             body { background: #fff; }
@@ -157,6 +177,15 @@
 </head>
 <body>
     <div class="barra">
+        <span class="etiqueta">Alcance:</span>
+        @foreach ($alcances as $clave => $definicion)
+            <a
+                class="alt {{ $alcance === $clave ? 'activo' : '' }}"
+                href="{{ request()->fullUrlWithQuery(['alcance' => $clave, 'imprimir' => null]) }}"
+            >{{ $definicion['etiqueta'] }}</a>
+        @endforeach
+
+        <span class="separador"></span>
         <a class="alt" href="{{ request()->fullUrlWithQuery(['formato' => 'ticket', 'imprimir' => null]) }}">Ver en ticketera</a>
         <button type="button" onclick="window.print()">Imprimir A4</button>
     </div>
@@ -186,6 +215,15 @@
             <div class="par"><span>Código :</span><span>{{ trim($codUsu) }}</span></div>
             <div class="par"><span>Comprobantes :</span><span>{{ $comprobantes['emitidos'] }} emitidos · {{ $comprobantes['anulados'] }} anulados</span></div>
         </div>
+
+        {{-- El alcance va impreso: el reporte de efectivo no debe confundirse con uno
+             que incluya seguros. --}}
+        <p class="alcance">
+            <b>Alcance:</b> {{ $alcanceEtiqueta }}.
+            @if ($alcance !== 'todas')
+                No incluye lo cobrado por seguros, convenios, crédito ni programas.
+            @endif
+        </p>
 
         @forelse ($formasPago as $forma)
             <div class="forma">
@@ -236,6 +274,18 @@
             <div><span>DEPÓSITOS PACIENTE</span><span>{{ number_format($depositos, 2) }}</span></div>
             <div class="general"><span>TOTAL GENERAL</span><span>{{ number_format($totalGeneral, 2) }}</span></div>
         </div>
+
+        @if ($excluido->isNotEmpty())
+            <div class="excluido">
+                <div class="t">No incluido en este reporte (cobrado por cobertura, no en efectivo)</div>
+                @foreach ($excluido as $e)
+                    <div class="fila">
+                        <span>{{ $e->forma }} <em>({{ $e->grupo }})</em> · {{ $e->comprobantes }} comprob.</span>
+                        <span>{{ number_format($e->total, 2) }}</span>
+                    </div>
+                @endforeach
+            </div>
+        @endif
 
         <div class="firmas">
             <div class="firma">Recaudador</div>

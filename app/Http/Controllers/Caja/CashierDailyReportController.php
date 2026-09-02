@@ -27,6 +27,42 @@ use Illuminate\Support\Facades\DB;
  */
 class CashierDailyReportController extends Controller
 {
+    /**
+     * Alcances del reporte.
+     *
+     * El reporte diario rinde el efectivo que el cajero tiene en la mano, asi que NO
+     * debe mezclar contado con seguros: lo cobrado por SIS, SOAT, convenios, credito
+     * o programas no entra en ese cuadre. La jerarquia del catalogo separa el grupo
+     * CONTADO (contado, exoneracion, particular, aniversario, contado card, no soat y
+     * convenio administrativo) del resto, que son las coberturas.
+     *
+     * @var array<string, array{etiqueta: string, formas: array<int, string>|null, grupo: string|null}>
+     */
+    private const ALCANCES = [
+        'contado' => [
+            'etiqueta' => 'Solo contado',
+            'formas' => ['CONTADO'],
+            'grupo' => null,
+        ],
+        'contado_exonerado' => [
+            'etiqueta' => 'Contado y exonerado',
+            'formas' => ['CONTADO', 'EXONERACION'],
+            'grupo' => null,
+        ],
+        'grupo_contado' => [
+            'etiqueta' => 'Todo el grupo contado',
+            'formas' => null,
+            'grupo' => 'CONTADO',
+        ],
+        'todas' => [
+            'etiqueta' => 'Todas las formas de pago',
+            'formas' => null,
+            'grupo' => null,
+        ],
+    ];
+
+    private const ALCANCE_POR_DEFECTO = 'contado_exonerado';
+
     public function __invoke(Request $request): View
     {
         $desde = $this->parseDate($request->query('desde')) ?? Carbon::today();
@@ -50,7 +86,10 @@ class CashierDailyReportController extends Controller
 
         $cajero = DB::connection('caja')->table('Usuario')->where('cod_usu', $codUsu)->first();
 
-        $lineas = $this->lineas($codUsu, $desde, $hasta);
+        $alcance = $request->query('alcance');
+        $alcance = isset(self::ALCANCES[$alcance]) ? $alcance : self::ALCANCE_POR_DEFECTO;
+
+        $lineas = $this->lineas($codUsu, $desde, $hasta, $alcance);
 
         // forma de pago -> cuenta contable -> servicios, respetando el orden de la consulta.
         $formasPago = $lineas
@@ -86,6 +125,12 @@ class CashierDailyReportController extends Controller
             'depositos' => $depositos,
             'totalGeneral' => $totalVentas + $depositos,
             'comprobantes' => $this->conteoComprobantes($codUsu, $desde, $hasta),
+            'alcance' => $alcance,
+            'alcanceEtiqueta' => self::ALCANCES[$alcance]['etiqueta'],
+            'alcances' => self::ALCANCES,
+            // Lo que queda fuera del alcance se declara explicitamente: si no, quien
+            // lee el reporte podria creer que ese dinero no se cobro.
+            'excluido' => $this->excluido($codUsu, $desde, $hasta, $alcance),
             'hospital' => config('ticket.hospital'),
             'unidad' => config('ticket.unidad'),
             'direccion' => config('ticket.direccion'),
@@ -108,7 +153,7 @@ class CashierDailyReportController extends Controller
      * servicio cobrado a dos tarifas distintas son dos lineas en el reporte, tal como
      * las imprime el sistema actual.
      */
-    private function lineas(string $codUsu, Carbon $desde, Carbon $hasta)
+    private function lineas(string $codUsu, Carbon $desde, Carbon $hasta, string $alcance)
     {
         $fecha = LegacyDate::sqlToDate('d.fecha_actu');
 
@@ -122,6 +167,7 @@ class CashierDailyReportController extends Controller
             ->where('d.cod_usu', $codUsu)
             ->where('d.estado_doc', ChargeDocument::ESTADO_EMITIDO)
             ->whereRaw("{$fecha} between ? and ?", [$desde->format('Y-m-d'), $hasta->format('Y-m-d')])
+            ->tap(fn ($query) => $this->aplicarAlcance($query, $alcance))
             ->selectRaw("
                 COALESCE(RTRIM(fp.nom_forma_pago), 'SIN FORMA DE PAGO') as forma,
                 COALESCE(RTRIM(c7.Cuenta_7), 'SIN CUENTA') as cuenta,
@@ -135,6 +181,56 @@ class CashierDailyReportController extends Controller
             ->groupBy('fp.nom_forma_pago', 'c7.Cuenta_7', 'c7.descripcion_7', 'n.descripcion_nomen_tipo', 'dd.precio_detalle')
             ->orderBy('forma')
             ->orderBy('cuenta')
+            ->orderByDesc('total')
+            ->get();
+    }
+
+    /**
+     * Restringe la consulta a las formas de pago del alcance elegido. Se aplica sobre
+     * la tabla `fp` (Jerarquia_Forma_Pago_MH), que ya viene unida en las consultas.
+     */
+    private function aplicarAlcance($query, string $alcance): void
+    {
+        $definicion = self::ALCANCES[$alcance];
+
+        if ($definicion['formas'] !== null) {
+            $query->whereIn(DB::raw('RTRIM(fp.nom_forma_pago)'), $definicion['formas']);
+
+            return;
+        }
+
+        if ($definicion['grupo'] !== null) {
+            $query->where(DB::raw('RTRIM(fp.fp_padre)'), $definicion['grupo']);
+        }
+    }
+
+    /**
+     * Lo cobrado en el periodo que el alcance deja fuera, agrupado por forma de pago.
+     * Se imprime como nota al pie: quien firma el reporte tiene que saber que ese
+     * dinero existe y por que no esta en el cuadre de efectivo.
+     */
+    private function excluido(string $codUsu, Carbon $desde, Carbon $hasta, string $alcance)
+    {
+        if ($alcance === 'todas') {
+            return collect();
+        }
+
+        $fecha = LegacyDate::sqlToDate('d.fecha_actu');
+
+        return DB::connection('caja')
+            ->table('Cabecera_documento_MH as d')
+            ->leftJoin('Jerarquia_Forma_Pago_MH as fp', 'fp.cod_jerar_forma_pago', '=', 'd.cod_jerar_forma_pago')
+            ->where('d.cod_usu', $codUsu)
+            ->where('d.estado_doc', ChargeDocument::ESTADO_EMITIDO)
+            ->whereRaw("{$fecha} between ? and ?", [$desde->format('Y-m-d'), $hasta->format('Y-m-d')])
+            ->whereNot(fn ($query) => $this->aplicarAlcance($query, $alcance))
+            ->selectRaw("
+                COALESCE(RTRIM(fp.nom_forma_pago), 'SIN FORMA DE PAGO') as forma,
+                COALESCE(RTRIM(fp.fp_padre), 'OTROS') as grupo,
+                COUNT(*) as comprobantes,
+                SUM(d.total_doc) as total
+            ")
+            ->groupBy('fp.nom_forma_pago', 'fp.fp_padre')
             ->orderByDesc('total')
             ->get();
     }
