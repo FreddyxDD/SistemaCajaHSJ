@@ -14,8 +14,8 @@ return [
 
     'hospital' => env('TICKET_HOSPITAL', 'HOSPITAL SAN JOSÉ DE CHINCHA'),
     'unidad' => env('TICKET_UNIDAD', 'Unidad Ejecutora 401 Salud Chincha'),
-    'direccion' => env('TICKET_DIRECCION', ''),
-    'ruc' => env('TICKET_RUC', ''),
+    'direccion' => env('TICKET_DIRECCION', 'AV. ALVA MAURTUA N° 600'),
+    'ruc' => env('TICKET_RUC', '20410275768'),
 
     /*
     | Logo del hospital para la cabecera del ticket. Ruta relativa a public/.

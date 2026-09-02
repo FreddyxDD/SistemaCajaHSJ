@@ -189,6 +189,52 @@ new #[Title('Turno de caja')] class extends Component {
         @endif
     </x-current-cashier-banner>
 
+    {{-- Reporte diario: es el que el cajero entrega firmado al cajero central, por eso
+         va destacado y en los dos formatos. --}}
+    <flux:card class="space-y-3">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <flux:subheading>Reporte diario de recaudación</flux:subheading>
+                <flux:text class="mt-1 text-sm text-zinc-500">
+                    Agrupado por forma de pago y cuenta contable, con el detalle por servicio. Es el que
+                    se entrega firmado al cajero central.
+                </flux:text>
+            </div>
+            <flux:badge color="zinc" size="sm">{{ now()->format('d/m/Y') }}</flux:badge>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+            <flux:button
+                href="{{ route('caja.daily-report', ['desde' => now()->format('Y-m-d'), 'imprimir' => 1]) }}"
+                target="_blank"
+                variant="primary"
+                size="sm"
+                icon="document-text"
+            >
+                Imprimir A4
+            </flux:button>
+
+            <flux:button
+                href="{{ route('caja.daily-report', ['desde' => now()->format('Y-m-d'), 'formato' => 'ticket', 'imprimir' => 1]) }}"
+                target="_blank"
+                variant="filled"
+                size="sm"
+                icon="receipt-percent"
+            >
+                Imprimir en ticketera
+            </flux:button>
+
+            <flux:button
+                href="{{ route('caja.daily-report', ['desde' => now()->subDay()->format('Y-m-d')]) }}"
+                target="_blank"
+                variant="ghost"
+                size="sm"
+            >
+                Ver el de ayer
+            </flux:button>
+        </div>
+    </flux:card>
+
     {{-- Turnos viejos sin cerrar: son los que bloquean la apertura de uno nuevo. --}}
     @if ($this->staleSessions->isNotEmpty())
         <flux:callout variant="warning" heading="Tienes {{ $this->staleSessions->count() }} turno(s) pendientes de cerrar">

@@ -296,10 +296,34 @@ new #[Title('Cajeros y turnos')] class extends Component {
         {{-- Turnos del cajero seleccionado --}}
         <div class="lg:col-span-3">
             <div class="overflow-hidden acrilico">
-                <div class="border-b border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-white/10 dark:bg-white/5">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-white/10 dark:bg-white/5">
                     <flux:subheading>
                         {{ $this->cashier ? 'Turnos de '.$this->selectedCashierName : 'Turnos' }}
                     </flux:subheading>
+
+                    {{-- El cajero central revisa aquí el mismo reporte que el cajero le entrega. --}}
+                    @if ($this->cashier)
+                        <div class="flex flex-wrap gap-2">
+                            <flux:button
+                                href="{{ route('caja.daily-report', ['cajero' => $this->cashier, 'desde' => $from, 'hasta' => $to]) }}"
+                                target="_blank"
+                                size="xs"
+                                variant="ghost"
+                                icon="document-text"
+                            >
+                                Reporte diario A4
+                            </flux:button>
+                            <flux:button
+                                href="{{ route('caja.daily-report', ['cajero' => $this->cashier, 'desde' => $from, 'hasta' => $to, 'formato' => 'ticket']) }}"
+                                target="_blank"
+                                size="xs"
+                                variant="ghost"
+                                icon="receipt-percent"
+                            >
+                                Ticketera
+                            </flux:button>
+                        </div>
+                    @endif
                 </div>
 
                 @if (! $this->cashier)

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Caja\CashierDailyReportController;
 use App\Http\Controllers\Caja\CashSessionReportController;
 use App\Http\Controllers\Caja\ReceiptTicketController;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,12 @@ Route::middleware(['auth', 'verified'])->prefix('caja')->name('caja.')->group(fu
     Route::get('turnos/{sessionCode}/reporte-contable', CashSessionReportController::class)
         ->middleware('permission:caja.view')
         ->name('sessions.report');
+
+    // Reporte diario del cajero: el que se entrega firmado al cajero central.
+    // Mismo contenido en A4 y en ticketera segun ?formato=
+    Route::get('reporte-diario', CashierDailyReportController::class)
+        ->middleware('permission:caja.view')
+        ->name('daily-report');
 
     Route::livewire('cobros', 'pages::caja.charges')
         ->middleware('permission:caja.view')
