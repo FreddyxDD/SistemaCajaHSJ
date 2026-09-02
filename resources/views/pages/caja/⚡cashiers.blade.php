@@ -329,7 +329,10 @@ new #[Title('Cajeros y turnos')] class extends Component {
                 @if (! $this->cashier)
                     <div class="flex flex-col items-center justify-center px-4 py-16 text-center">
                         <flux:icon.cursor-arrow-rays class="size-8 text-zinc-300 dark:text-zinc-600" />
-                        <flux:text class="mt-3 text-sm text-zinc-500">Selecciona un cajero de la lista para ver sus turnos y el detalle de lo recaudado.</flux:text>
+                        <flux:text class="mt-3 text-sm text-zinc-500">
+                            Selecciona un cajero de la lista para ver sus turnos, el detalle de lo recaudado
+                            y para imprimir su reporte diario en A4 o en ticketera.
+                        </flux:text>
                     </div>
                 @else
                     <div class="max-h-[32rem] divide-y overflow-y-auto dark:divide-white/10">

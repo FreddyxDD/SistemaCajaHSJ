@@ -175,6 +175,57 @@ new #[Title('Detalle de turno')] class extends Component {
         </div>
     </div>
 
+    {{-- Reporte diario del cajero: es el del dia completo, no el de este turno, porque
+         un cajero puede abrir varios turnos en la jornada y eso es lo que entrega
+         firmado al cajero central. --}}
+    @php $diaDelTurno = $this->session->openedAt()?->format('Y-m-d'); @endphp
+
+    @if ($diaDelTurno)
+        <flux:card class="space-y-3">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <flux:subheading>Reporte diario del cajero</flux:subheading>
+                    <flux:text class="mt-1 text-sm text-zinc-500">
+                        Recaudación de <b>{{ trim($this->cashier?->nom_usu ?? '') ?: $this->session->cod_usu }}</b>
+                        del {{ $this->session->openedAt()->format('d/m/Y') }} —
+                        el día completo, agrupado por forma de pago y cuenta contable.
+                    </flux:text>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+                <flux:button
+                    href="{{ route('caja.daily-report', ['cajero' => trim($this->session->cod_usu), 'desde' => $diaDelTurno, 'imprimir' => 1]) }}"
+                    target="_blank"
+                    variant="filled"
+                    size="sm"
+                    icon="document-text"
+                >
+                    Imprimir A4
+                </flux:button>
+
+                <flux:button
+                    href="{{ route('caja.daily-report', ['cajero' => trim($this->session->cod_usu), 'desde' => $diaDelTurno, 'formato' => 'ticket', 'imprimir' => 1]) }}"
+                    target="_blank"
+                    variant="filled"
+                    size="sm"
+                    icon="receipt-percent"
+                >
+                    Imprimir en ticketera
+                </flux:button>
+
+                <flux:button
+                    href="{{ route('caja.daily-report', ['cajero' => trim($this->session->cod_usu), 'desde' => $diaDelTurno]) }}"
+                    target="_blank"
+                    variant="ghost"
+                    size="sm"
+                >
+                    Ver sin imprimir
+                </flux:button>
+            </div>
+        </flux:card>
+    @endif
+
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="acrilico p-5">
             <flux:text class="text-sm text-zinc-500">Recaudado en el turno</flux:text>
