@@ -32,25 +32,18 @@ class CashierDailyReportController extends Controller
      *
      * El reporte diario rinde el efectivo que el cajero tiene en la mano, asi que NO
      * debe mezclar contado con seguros: lo cobrado por SIS, SOAT, convenios, credito
-     * o programas no entra en ese cuadre. La jerarquia del catalogo separa el grupo
-     * CONTADO (contado, exoneracion, particular, aniversario, contado card, no soat y
-     * convenio administrativo) del resto, que son las coberturas.
+     * o programas no entra en ese cuadre.
      *
-     * @var array<string, array{etiqueta: string, formas: array<int, string>|null, grupo: string|null}>
+     * El corte es el grupo CONTADO de la jerarquia del catalogo, entero: contado,
+     * exoneracion, particular, aniversario, contado card, no soat y convenio
+     * administrativo. Todas esas son formas en que el paciente paga en ventanilla, y
+     * separar unas de otras dejaria fuera recaudacion que el cajero si recibio.
+     *
+     * @var array<string, array{etiqueta: string, grupo: string|null}>
      */
     private const ALCANCES = [
         'contado' => [
-            'etiqueta' => 'Solo contado',
-            'formas' => ['CONTADO'],
-            'grupo' => null,
-        ],
-        'contado_exonerado' => [
-            'etiqueta' => 'Contado y exonerado',
-            'formas' => ['CONTADO', 'EXONERACION'],
-            'grupo' => null,
-        ],
-        'grupo_contado' => [
-            'etiqueta' => 'Todo el grupo contado',
+            'etiqueta' => 'Grupo contado',
             'formas' => null,
             'grupo' => 'CONTADO',
         ],
@@ -61,7 +54,7 @@ class CashierDailyReportController extends Controller
         ],
     ];
 
-    private const ALCANCE_POR_DEFECTO = 'contado_exonerado';
+    private const ALCANCE_POR_DEFECTO = 'contado';
 
     public function __invoke(Request $request): View
     {
@@ -191,16 +184,10 @@ class CashierDailyReportController extends Controller
      */
     private function aplicarAlcance($query, string $alcance): void
     {
-        $definicion = self::ALCANCES[$alcance];
+        $grupo = self::ALCANCES[$alcance]['grupo'];
 
-        if ($definicion['formas'] !== null) {
-            $query->whereIn(DB::raw('RTRIM(fp.nom_forma_pago)'), $definicion['formas']);
-
-            return;
-        }
-
-        if ($definicion['grupo'] !== null) {
-            $query->where(DB::raw('RTRIM(fp.fp_padre)'), $definicion['grupo']);
+        if ($grupo !== null) {
+            $query->where(DB::raw('RTRIM(fp.fp_padre)'), $grupo);
         }
     }
 
